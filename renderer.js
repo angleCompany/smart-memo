@@ -152,7 +152,7 @@ function renderItemList() {
     let thumbHtml = '';
     if (!isMemo) {
       thumbHtml = item.image
-        ? `<img class="card-thumb" src="${escHtml(item.image)}" alt="" onerror="this.outerHTML='<div class=card-thumb-placeholder>${getCatIcon(item.category)}</div>'">`
+        ? `<img class="card-thumb" src="${escHtml(item.image)}" alt="" data-fallback-icon="${escHtml(getCatIcon(item.category))}">`
         : `<div class="card-thumb-placeholder">${getCatIcon(item.category)}</div>`;
     }
 
@@ -181,6 +181,16 @@ function renderItemList() {
 
   itemListEl.querySelectorAll('.item-card').forEach(el => {
     el.addEventListener('click', () => selectItem(el.dataset.id));
+  });
+
+  itemListEl.querySelectorAll('img[data-fallback-icon]').forEach(img => {
+    img.addEventListener('error', () => {
+      const icon = img.dataset.fallbackIcon || '🌐';
+      const div = document.createElement('div');
+      div.className = img.className === 'card-thumb' ? 'card-thumb-placeholder' : 'card-thumb-placeholder';
+      div.textContent = icon;
+      img.replaceWith(div);
+    }, { once: true });
   });
 }
 
@@ -214,7 +224,7 @@ function renderDetail() {
       thumbHtml = `
         <div class="detail-thumb-wrap">
           <img class="detail-thumb" src="${escHtml(item.image)}" alt=""
-            onerror="this.parentElement.innerHTML='<div class=detail-thumb-placeholder>${getCatIcon(item.category)}</div>'">
+            data-fallback-icon="${escHtml(getCatIcon(item.category))}">
         </div>`;
     }
     detailContentEl.innerHTML = `
@@ -243,6 +253,16 @@ function renderDetail() {
 
   $('detailDeleteBtn')?.addEventListener('click', () => deleteItem(item.id));
   $('detailEditBtn')?.addEventListener('click', () => openMemoModal(item));
+
+  detailContentEl.querySelectorAll('img[data-fallback-icon]').forEach(img => {
+    img.addEventListener('error', () => {
+      const icon = img.dataset.fallbackIcon || '🌐';
+      const div = document.createElement('div');
+      div.className = 'detail-thumb-placeholder';
+      div.textContent = icon;
+      img.replaceWith(div);
+    }, { once: true });
+  });
 }
 
 /* ===== Settings modal ===== */
