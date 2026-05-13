@@ -1,0 +1,44 @@
+{
+  "name": "smart-memo",
+  "productName": "Smart Memo",
+  "version": "1.0.0",
+  "description": "Smart bookmark and memo app for macOS",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac",
+    "build:x64": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac --x64",
+    "build:arm64": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac --arm64",
+    "build:all": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac --x64 --arm64"
+  },
+  "build": {
+    "appId": "com.sjuyi.smartmemo",
+    "productName": "Smart Memo",
+    "copyright": "Copyright © 2026 sjuyi",
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer.js",
+      "index.html",
+      "styles.css",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "identity": null,
+      "hardenedRuntime": false,
+      "target": [
+        { "target": "dmg", "arch": ["x64", "arm64"] }
+      ]
+    },
+    "dmg": {
+      "title": "Smart Memo ${version}",
+      "writeUpdateInfo": false,
+      "artifactName": "Smart-Memo-${version}-${arch}.dmg"
+    }
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^25.0.0"
+  }
+}
