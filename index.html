@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Memo</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-drag-region"></div>
+      <div class="sidebar-logo">
+        <span class="logo-icon">📌</span>
+        <span class="logo-text">Smart Memo</span>
+      </div>
+      <nav class="categories" id="categories"></nav>
+
+      <!-- Sidebar footer: sync status + settings -->
+      <div class="sidebar-footer">
+        <div class="sync-chip" id="syncChip" title="동기화 설정">
+          <span class="sync-chip-icon" id="syncChipIcon">💾</span>
+          <span class="sync-chip-label" id="syncChipLabel">로컬</span>
+          <span class="sync-dot" id="syncDot"></span>
+        </div>
+        <button class="btn-icon-sm" id="btnSettings" title="설정 및 동기화">⚙️</button>
+      </div>
+    </aside>
+
+    <!-- Main area -->
+    <div class="main">
+      <!-- Toolbar -->
+      <div class="toolbar" id="toolbar">
+        <div class="url-input-wrap" id="urlInputWrap">
+          <span class="url-icon">🔗</span>
+          <input type="text" id="urlInput" placeholder="URL을 붙여넣으세요 (Enter로 저장)" autocomplete="off" spellcheck="false" />
+          <button class="btn-add-url" id="btnAddUrl">추가</button>
+        </div>
+        <button class="btn-memo" id="btnNewMemo"><span>✏️</span> 새 메모</button>
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="검색..." autocomplete="off" />
+        </div>
+      </div>
+
+      <!-- Content area -->
+      <div class="content">
+        <div class="item-list" id="itemList"></div>
+        <div class="detail-panel" id="detailPanel">
+          <div class="detail-empty" id="detailEmpty">
+            <div class="empty-icon">📌</div>
+            <p>URL 또는 메모를 선택하세요</p>
+            <p class="empty-hint">URL을 붙여넣거나 새 메모를 작성해보세요</p>
+          </div>
+          <div class="detail-content" id="detailContent" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Memo editor modal -->
+  <div class="modal-overlay" id="memoModal" style="display:none">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="memoModalTitle">새 메모</h2>
+        <button class="btn-close" id="btnCloseMemo">✕</button>
+      </div>
+      <textarea id="memoTextarea" placeholder="메모를 입력하세요... (⌘+Enter로 저장)"></textarea>
+      <div class="modal-footer">
+        <button class="btn-cancel" id="btnCancelMemo">취소</button>
+        <button class="btn-save" id="btnSaveMemo">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings modal -->
+  <div class="modal-overlay" id="settingsModal" style="display:none">
+    <div class="modal modal-settings">
+      <div class="modal-header">
+        <h2>설정 및 동기화</h2>
+        <button class="btn-close" id="btnCloseSettings">✕</button>
+      </div>
+      <div class="settings-body">
+
+        <!-- iCloud sync section -->
+        <div class="settings-section">
+          <div class="settings-section-title">☁️ iCloud 동기화</div>
+          <div class="settings-card">
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <div class="settings-row-label">iCloud Drive에 저장</div>
+                <div class="settings-row-desc" id="icloudPathDesc">같은 Apple 계정의 모든 기기에서 자동 동기화</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="icloudToggle" />
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+            <div id="icloudUnavailableBanner" class="notice-banner notice-warn" style="display:none">
+              ⚠️ iCloud Drive가 활성화되어 있지 않습니다. 시스템 환경설정 &gt; Apple ID에서 iCloud Drive를 켜주세요.
+            </div>
+          </div>
+        </div>
+
+        <!-- Share with other Apple IDs -->
+        <div class="settings-section" id="shareSection" style="display:none">
+          <div class="settings-section-title">👥 다른 Apple 계정과 공유</div>
+          <div class="settings-card share-steps">
+            <div class="share-step"><span class="step-badge">1</span><span>Finder에서 <strong>iCloud Drive &gt; SmartMemo</strong> 폴더를 찾아주세요</span></div>
+            <div class="share-step"><span class="step-badge">2</span><span>폴더를 우클릭 &gt; <strong>공유</strong> &gt; <strong>협업 초대</strong>를 선택하세요</span></div>
+            <div class="share-step"><span class="step-badge">3</span><span>공유할 상대방의 <strong>Apple 계정 이메일</strong>을 입력하세요</span></div>
+            <div class="share-step"><span class="step-badge">4</span><span>상대방이 초대를 수락하면 자동으로 데이터가 공유됩니다 ✅</span></div>
+            <button class="btn-secondary btn-full" id="btnOpenFinder">📂 Finder에서 SmartMemo 폴더 열기</button>
+          </div>
+        </div>
+
+        <!-- Export / Import -->
+        <div class="settings-section">
+          <div class="settings-section-title">📦 백업 및 가져오기</div>
+          <div class="settings-card">
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <div class="settings-row-label">데이터 내보내기</div>
+                <div class="settings-row-desc">현재 데이터를 JSON 파일로 저장</div>
+              </div>
+              <button class="btn-sm btn-secondary" id="btnExport">내보내기</button>
+            </div>
+            <div class="settings-divider"></div>
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <div class="settings-row-label">데이터 가져오기</div>
+                <div class="settings-row-desc">JSON 파일에서 불러오기 (기존 데이터에 병합)</div>
+              </div>
+              <button class="btn-sm btn-secondary" id="btnImport">가져오기</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Storage path info -->
+        <div class="settings-section">
+          <div class="settings-section-title">💾 저장 위치</div>
+          <div class="settings-card">
+            <div class="data-path-box" id="dataPathBox"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading overlay -->
+  <div class="loading-overlay" id="loadingOverlay" style="display:none">
+    <div class="spinner"></div>
+    <p>메타데이터를 가져오는 중...</p>
+  </div>
+
+  <!-- Sync notification -->
+  <div class="sync-notification" id="syncNotification" style="display:none">
+    <span class="sync-notification-icon">☁️</span>
+    <span id="syncNotificationText">다른 기기에서 데이터가 동기화되었습니다</span>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
