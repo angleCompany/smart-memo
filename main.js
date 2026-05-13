@@ -180,7 +180,16 @@ function categorizeUrl(urlString) {
   return 'General';
 }
 
+const PRIVATE_IP_RE = /^(localhost|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|::1$|0\.0\.0\.0)/;
+
+function assertSafeUrl(urlString) {
+  const u = new URL(urlString);
+  if (!['http:', 'https:'].includes(u.protocol)) throw new Error('Protocol not allowed');
+  if (PRIVATE_IP_RE.test(u.hostname)) throw new Error('Private address not allowed');
+}
+
 async function fetchUrlMetadata(urlString) {
+  assertSafeUrl(urlString);
   const parsedUrl = new URL(urlString);
   const hostname = parsedUrl.hostname.toLowerCase();
 
@@ -213,6 +222,7 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      sandbox: true,
     },
   });
   mainWindow.loadFile('index.html');
@@ -276,7 +286,14 @@ ipcMain.handle('delete-item', (_, id) => {
   return true;
 });
 
-ipcMain.handle('open-url', (_, url) => { shell.openExternal(url); return true; });
+ipcMain.handle('open-url', (_, url) => {
+  try {
+    const u = new URL(url);
+    if (!['http:', 'https:'].includes(u.protocol)) return false;
+    shell.openExternal(url);
+    return true;
+  } catch { return false; }
+});
 ipcMain.handle('get-theme', () => nativeTheme.shouldUseDarkColors ? 'dark' : 'light');
 
 /* ===== IPC: Sync & Settings ===== */
@@ -333,20 +350,55 @@ ipcMain.handle('import-data', async (_, mode = 'merge') => {
     return { success: false, error: '유효하지 않은 파일입니다' };
   }
 
+  const ALLOWED_TYPES = new Set(['url', 'memo']);
+  const ALLOWED_CATEGORIES = new Set(['Video','Code','Article','Social','Shopping','Korean','Docs','General']);
+
+  function sanitizeItem(item) {
+    if (!item || typeof item !== 'object') return null;
+    if (!ALLOWED_TYPES.has(item.type)) return null;
+    if (item.type === 'url') {
+      try {
+        const u = new URL(item.content);
+        if (!['http:', 'https:'].includes(u.protocol)) return null;
+      } catch { return null; }
+    }
+    return {
+      id:          String(item.id   || '').slice(0, 64),
+      type:        item.type,
+      content:     String(item.content     || '').slice(0, 4096),
+      title:       String(item.title       || '').slice(0, 500),
+      description: String(item.description || '').slice(0, 2000),
+      image:       String(item.image       || '').slice(0, 2048),
+      domain:      String(item.domain      || '').slice(0, 253),
+      category:    ALLOWED_CATEGORIES.has(item.category) ? item.category : 'General',
+      createdAt:   item.createdAt || new Date().toISOString(),
+      updatedAt:   item.updatedAt || new Date().toISOString(),
+    };
+  }
+
+  const sanitized = imported.items.map(sanitizeItem).filter(Boolean);
+
   if (mode === 'merge') {
     const existingIds = new Set(appData.items.map(i => i.id));
-    const newItems = imported.items.filter(i => !existingIds.has(i.id));
+    const newItems = sanitized.filter(i => !existingIds.has(i.id));
     appData.items = [...appData.items, ...newItems];
     saveData();
     return { success: true, added: newItems.length, total: imported.items.length };
   } else {
-    appData = { items: imported.items };
+    appData = { items: sanitized };
     saveData();
-    return { success: true, added: imported.items.length, total: imported.items.length };
+    return { success: true, added: sanitized.length, total: imported.items.length };
   }
 });
 
 ipcMain.handle('open-in-finder', (_, dirPath) => {
-  shell.showItemInFolder(dirPath);
+  const icloudBase = getICloudBase();
+  const allowedPrefixes = [
+    app.getPath('userData'),
+    ...(icloudBase ? [path.join(icloudBase, 'SmartMemo')] : []),
+  ];
+  const normalized = path.resolve(dirPath);
+  if (!allowedPrefixes.some(p => normalized.startsWith(p))) return false;
+  shell.showItemInFolder(normalized);
   return true;
 });
