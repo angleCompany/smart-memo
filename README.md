@@ -6,6 +6,8 @@ macOS용 스마트 북마크 & 메모 앱 — URL을 저장하면 제목·설명
 ![Version](https://img.shields.io/badge/version-1.0.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
+**한국어 · [English](README.en.md) · [中文](README.zh.md) · [日本語](README.ja.md)**
+
 ---
 
 ## 스크린샷
