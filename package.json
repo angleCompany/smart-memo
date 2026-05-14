@@ -18,8 +18,10 @@
     "files": [
       "main.js",
       "preload.js",
+      "capturePreload.js",
       "renderer.js",
       "index.html",
+      "capture.html",
       "styles.css",
       "package.json"
     ],
