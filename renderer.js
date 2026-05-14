@@ -276,32 +276,53 @@ function renderDetailTags(item) {
     </div>`;
 }
 
+function refreshDetailTagChips(liveItem) {
+  const chips = $('detailTagChips');
+  if (!chips) return;
+  chips.innerHTML = (liveItem.tags || []).map(t =>
+    `<span class="tag-chip-edit">#${escHtml(t)}<button class="tag-chip-remove" data-tag="${escHtml(t)}">×</button></span>`
+  ).join('');
+  chips.querySelectorAll('.tag-chip-remove').forEach(btn => {
+    btn.addEventListener('click', () => removeDetailTag(liveItem, btn.dataset.tag));
+  });
+  // update sidebar tag counts without re-rendering whole panel
+  window.api.getCounts().then(counts => {
+    state.counts = counts;
+    state.tagCounts = counts.tags || {};
+    renderSidebar();
+  });
+}
+
+async function removeDetailTag(item, tag) {
+  const tags = (item.tags || []).filter(t => t !== tag);
+  const saved = await window.api.saveItem({ ...item, tags });
+  state.selectedItem = saved;
+  item.tags = saved.tags;
+  refreshDetailTagChips(item);
+}
+
 function bindDetailTagEvents(item) {
   const input = $('tagAddInput');
   if (!input) return;
 
-  $('detailTagChips')?.addEventListener('click', async e => {
-    const btn = e.target.closest('.tag-chip-remove');
-    if (!btn) return;
-    const tag = btn.dataset.tag;
-    const tags = (item.tags || []).filter(t => t !== tag);
-    const saved = await window.api.saveItem({ ...item, tags });
-    state.selectedItem = saved;
-    await loadAll();
-    selectItem(saved.id);
-  });
+  // chip remove buttons are bound inside refreshDetailTagChips
+  refreshDetailTagChips(item);
 
   input.addEventListener('keydown', async e => {
+    if (e.isComposing) return;                          // Korean/CJK IME fix
     if (e.key !== 'Enter' && e.key !== ',') return;
     e.preventDefault();
-    const tag = input.value.trim().toLowerCase().replace(/[,#\s]+/g, '');
-    if (!tag) return;
-    const tags = [...new Set([...(item.tags || []), tag])];
+    const raw = input.value.trim().replace(/^[,#\s]+/, '').replace(/[,#\s]+$/, '');
+    if (!raw) return;
+    const tag = raw.toLowerCase();
+    if ((item.tags || []).includes(tag)) { input.value = ''; return; }
+    const tags = [...(item.tags || []), tag];
     input.value = '';
     const saved = await window.api.saveItem({ ...item, tags });
     state.selectedItem = saved;
-    await loadAll();
-    selectItem(saved.id);
+    item.tags = saved.tags;
+    refreshDetailTagChips(item);
+    input.focus();                                      // keep focus
   });
 }
 
@@ -473,27 +494,54 @@ async function addUrl() {
   if (!isValidUrl(raw)) { showToast('올바른 URL을 입력해주세요'); return; }
 
   const url = normalizeUrl(raw);
-  urlInput.value = '';
-  loadingOverlay.style.display = '';
 
+  // duplicate check
+  const exists = state.items.find(i => !i.deletedAt && i.type === 'url' && i.content === url);
+  if (exists) {
+    showToast('이미 저장된 URL입니다');
+    state.selectedItem = exists;
+    renderItemList();
+    renderDetail();
+    return;
+  }
+
+  urlInput.value = '';
+  const hostname = new URL(url).hostname.replace('www.', '');
+
+  // save immediately — no blocking overlay
+  let saved;
   try {
-    const meta = await window.api.fetchUrlMetadata(url);
-    const saved = await window.api.saveItem({
+    saved = await window.api.saveItem({
       type: 'url', content: url,
+      title: url,
+      description: '',
+      image: '',
+      category: 'General',
+      domain: hostname,
+      tags: [],
+    });
+  } catch (e) {
+    showToast('저장 중 오류가 발생했습니다');
+    return;
+  }
+  state.selectedItem = saved;
+  showToast('저장됨 — 메타데이터 로딩 중...');
+  await loadAll();
+
+  // fetch metadata in background and update silently
+  window.api.fetchUrlMetadata(url).then(async meta => {
+    if (!meta.success) return;
+    const updated = await window.api.saveItem({
+      ...saved,
       title: meta.title || url,
       description: meta.description || '',
       image: meta.image || '',
       category: meta.category || 'General',
-      domain: meta.domain || new URL(url).hostname.replace('www.', ''),
+      domain: meta.domain || hostname,
     });
-    state.selectedItem = saved;
-    showToast(`저장됨: ${(meta.title || url).slice(0, 30)}`);
-  } catch (e) {
-    showToast('저장 중 오류가 발생했습니다');
-  } finally {
-    loadingOverlay.style.display = 'none';
-  }
-  await loadAll();
+    if (state.selectedItem?.id === saved.id) state.selectedItem = updated;
+    await loadAll();
+  }).catch(() => {});
 }
 
 function openMemoModal(existing = null) {
@@ -550,9 +598,7 @@ async function saveMemo() {
 /* ===== Event Listeners ===== */
 btnAddUrl.addEventListener('click', addUrl);
 urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') addUrl(); });
-urlInput.addEventListener('paste', () => {
-  setTimeout(() => { if (isValidUrl(urlInput.value.trim())) addUrl(); }, 0);
-});
+// no auto-add on paste — user must press Enter or click 추가
 
 btnNewMemo.addEventListener('click', () => openMemoModal());
 $('btnCloseMemo').addEventListener('click', closeMemoModal);
