@@ -7,6 +7,9 @@ contextBridge.exposeInMainWorld('api', {
   fetchUrlMetadata:  (url)     => ipcRenderer.invoke('fetch-url-metadata', url),
   saveItem:          (item)    => ipcRenderer.invoke('save-item', item),
   deleteItem:        (id)      => ipcRenderer.invoke('delete-item', id),
+  restoreItem:       (id)      => ipcRenderer.invoke('restore-item', id),
+  emptyTrash:        ()        => ipcRenderer.invoke('empty-trash'),
+  permDeleteItem:    (id)      => ipcRenderer.invoke('perm-delete-item', id),
   openUrl:           (url)     => ipcRenderer.invoke('open-url', url),
   getTheme:          ()        => ipcRenderer.invoke('get-theme'),
 

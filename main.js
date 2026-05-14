@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell, nativeTheme, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, nativeTheme, dialog, globalShortcut, clipboard, screen } = require('electron');
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
@@ -8,6 +8,7 @@ const zlib = require('zlib');
 const { URL } = require('url');
 
 let mainWindow;
+let captureWindow = null;
 let dataPath;
 let appData = { items: [] };
 let fileWatcher = null;
@@ -211,6 +212,44 @@ async function fetchUrlMetadata(urlString) {
   };
 }
 
+/* ===== Trash ===== */
+function purgeTrash() {
+  const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const before = appData.items.length;
+  appData.items = appData.items.filter(i => !i.deletedAt || i.deletedAt > cutoff);
+  if (appData.items.length < before) saveData();
+}
+
+/* ===== Capture window ===== */
+function createCaptureWindow() {
+  captureWindow = new BrowserWindow({
+    width: 580, height: 72,
+    frame: false,
+    alwaysOnTop: true,
+    resizable: false,
+    show: false,
+    skipTaskbar: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'capturePreload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+    },
+  });
+  captureWindow.loadFile('capture.html');
+  captureWindow.on('blur', () => captureWindow?.hide());
+  captureWindow.on('closed', () => { captureWindow = null; });
+}
+
+function showCaptureWindow() {
+  if (!captureWindow || captureWindow.isDestroyed()) createCaptureWindow();
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+  captureWindow.setPosition(Math.round((width - 580) / 2), Math.round(height * 0.22));
+  captureWindow.showInactive();
+  captureWindow.focus();
+  captureWindow.webContents.send('capture-focus');
+}
+
 /* ===== Window ===== */
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -231,34 +270,60 @@ function createWindow() {
 app.whenReady().then(() => {
   loadConfig();
   loadData();
+  purgeTrash();
   startFileWatcher();
   createWindow();
+  globalShortcut.register('CommandOrControl+Shift+M', showCaptureWindow);
   app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
 });
 
+app.on('will-quit', () => { globalShortcut.unregisterAll(); });
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 
 /* ===== IPC: Items ===== */
 ipcMain.handle('get-items', (_, filters = {}) => {
   let items = [...appData.items];
   const { category, search } = filters;
-  if (category && category !== 'All') {
-    items = category === 'Memo' ? items.filter(i => i.type === 'memo') : items.filter(i => i.type === 'url' && i.category === category);
+
+  if (category === 'Trash') {
+    items = items.filter(i => i.deletedAt);
+  } else {
+    items = items.filter(i => !i.deletedAt);
+    if (category && category !== 'All') {
+      if (category === 'Memo') {
+        items = items.filter(i => i.type === 'memo');
+      } else if (category.startsWith('tag:')) {
+        const tag = category.slice(4);
+        items = items.filter(i => (i.tags || []).includes(tag));
+      } else {
+        items = items.filter(i => i.type === 'url' && i.category === category);
+      }
+    }
   }
+
   if (search?.trim()) {
     const q = search.toLowerCase().trim();
-    items = items.filter(i => (i.title||'').toLowerCase().includes(q) || (i.content||'').toLowerCase().includes(q) || (i.description||'').toLowerCase().includes(q) || (i.domain||'').toLowerCase().includes(q));
+    items = items.filter(i =>
+      (i.title||'').toLowerCase().includes(q) ||
+      (i.content||'').toLowerCase().includes(q) ||
+      (i.description||'').toLowerCase().includes(q) ||
+      (i.domain||'').toLowerCase().includes(q) ||
+      (i.tags||[]).some(t => t.toLowerCase().includes(q))
+    );
   }
   return items.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 });
 
 ipcMain.handle('get-counts', () => {
-  const counts = { All: appData.items.length, Memo: 0 };
-  for (const item of appData.items) {
+  const active = appData.items.filter(i => !i.deletedAt);
+  const counts = { All: active.length, Memo: 0, Trash: appData.items.filter(i => i.deletedAt).length };
+  const tagCounts = {};
+  for (const item of active) {
     if (item.type === 'memo') counts.Memo = (counts.Memo || 0) + 1;
     else if (item.type === 'url') counts[item.category] = (counts[item.category] || 0) + 1;
+    for (const t of (item.tags || [])) tagCounts[t] = (tagCounts[t] || 0) + 1;
   }
-  return counts;
+  return { ...counts, tags: tagCounts };
 });
 
 ipcMain.handle('fetch-url-metadata', async (_, url) => {
@@ -266,7 +331,17 @@ ipcMain.handle('fetch-url-metadata', async (_, url) => {
   catch (e) { return { success: false, error: e.message, category: categorizeUrl(url), domain: '' }; }
 });
 
+function sanitizeTags(tags) {
+  if (!Array.isArray(tags)) return [];
+  return [...new Set(
+    tags.filter(t => typeof t === 'string' && t.trim())
+        .map(t => t.trim().toLowerCase().replace(/[,#\s]+/g, '').slice(0, 50))
+        .filter(Boolean)
+  )].slice(0, 20);
+}
+
 ipcMain.handle('save-item', (_, item) => {
+  item.tags = sanitizeTags(item.tags);
   if (item.id) {
     const idx = appData.items.findIndex(i => i.id === item.id);
     if (idx !== -1) appData.items[idx] = { ...appData.items[idx], ...item, updatedAt: new Date().toISOString() };
@@ -277,10 +352,33 @@ ipcMain.handle('save-item', (_, item) => {
     appData.items.unshift(item);
   }
   saveData();
-  return item;
+  return appData.items.find(i => i.id === item.id) || item;
 });
 
 ipcMain.handle('delete-item', (_, id) => {
+  const item = appData.items.find(i => i.id === id);
+  if (!item) return false;
+  item.deletedAt = new Date().toISOString();
+  saveData();
+  return true;
+});
+
+ipcMain.handle('restore-item', (_, id) => {
+  const item = appData.items.find(i => i.id === id);
+  if (!item) return false;
+  delete item.deletedAt;
+  item.updatedAt = new Date().toISOString();
+  saveData();
+  return true;
+});
+
+ipcMain.handle('empty-trash', () => {
+  appData.items = appData.items.filter(i => !i.deletedAt);
+  saveData();
+  return true;
+});
+
+ipcMain.handle('perm-delete-item', (_, id) => {
   appData.items = appData.items.filter(i => i.id !== id);
   saveData();
   return true;
@@ -371,6 +469,7 @@ ipcMain.handle('import-data', async (_, mode = 'merge') => {
       image:       String(item.image       || '').slice(0, 2048),
       domain:      String(item.domain      || '').slice(0, 253),
       category:    ALLOWED_CATEGORIES.has(item.category) ? item.category : 'General',
+      tags:        sanitizeTags(item.tags),
       createdAt:   item.createdAt || new Date().toISOString(),
       updatedAt:   item.updatedAt || new Date().toISOString(),
     };
@@ -390,6 +489,59 @@ ipcMain.handle('import-data', async (_, mode = 'merge') => {
     return { success: true, added: sanitized.length, total: imported.items.length };
   }
 });
+
+/* ===== IPC: Quick Capture ===== */
+ipcMain.handle('capture-read-clipboard', () => clipboard.readText());
+
+ipcMain.handle('capture-save-url', async (_, urlString) => {
+  try {
+    const raw = urlString.trim();
+    const url = raw.startsWith('http://') || raw.startsWith('https://') ? raw : 'https://' + raw;
+    assertSafeUrl(url);
+    const u = new URL(url);
+
+    const item = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      type: 'url',
+      content: url,
+      title: url,
+      description: '',
+      image: '',
+      category: categorizeUrl(url),
+      domain: u.hostname.replace('www.', ''),
+      tags: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    appData.items.unshift(item);
+    saveData();
+    mainWindow?.webContents.send('data-updated', { count: appData.items.filter(i => !i.deletedAt).length, source: 'capture' });
+
+    // fetch metadata in background
+    fetchUrlMetadata(url).then(meta => {
+      const idx = appData.items.findIndex(i => i.id === item.id);
+      if (idx === -1) return;
+      appData.items[idx] = {
+        ...appData.items[idx],
+        title: meta.title || url,
+        description: meta.description || '',
+        image: meta.image || '',
+        category: meta.category || categorizeUrl(url),
+        domain: meta.domain || u.hostname.replace('www.', ''),
+        updatedAt: new Date().toISOString(),
+      };
+      saveData();
+      mainWindow?.webContents.send('data-updated', { count: appData.items.filter(i => !i.deletedAt).length, source: 'capture-meta' });
+    }).catch(() => {});
+
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+});
+
+ipcMain.handle('capture-close', () => { captureWindow?.hide(); });
 
 ipcMain.handle('open-in-finder', (_, dirPath) => {
   const icloudBase = getICloudBase();

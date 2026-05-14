@@ -2,10 +2,12 @@
 const state = {
   items: [],
   counts: {},
+  tagCounts: {},
   selectedCategory: 'All',
   selectedItem: null,
   searchQuery: '',
   editingMemoId: null,
+  editingMemoTags: [],
   syncInfo: null,
 };
 
@@ -20,6 +22,7 @@ const CATEGORIES = [
   { id: 'Docs',     icon: '📚', label: '문서' },
   { id: 'General',  icon: '🌐', label: '일반' },
   { id: 'Memo',     icon: '✏️', label: '메모' },
+  { id: 'Trash',    icon: '🗑️', label: '휴지통' },
 ];
 
 /* ===== DOM ===== */
@@ -114,9 +117,11 @@ function showSyncNotification(msg) {
 
 /* ===== Render: Sidebar ===== */
 function renderSidebar() {
-  const { counts } = state;
+  const { counts, tagCounts } = state;
+  const mainCats = CATEGORIES.filter(c => c.id !== 'Trash');
   let html = '';
-  for (const cat of CATEGORIES) {
+
+  for (const cat of mainCats) {
     const count = counts[cat.id] || 0;
     const active = state.selectedCategory === cat.id ? 'active' : '';
     if (cat.id === 'Memo') html += `<div class="cat-sep"></div>`;
@@ -127,6 +132,33 @@ function renderSidebar() {
         ${count > 0 ? `<span class="cat-count">${count}</span>` : ''}
       </div>`;
   }
+
+  // Tags section
+  const tags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]);
+  if (tags.length > 0) {
+    html += `<div class="cat-sep"></div><div class="cat-section-label">태그</div>`;
+    for (const [tag, count] of tags) {
+      const tagId = `tag:${tag}`;
+      const active = state.selectedCategory === tagId ? 'active' : '';
+      html += `
+        <div class="cat-item ${active}" data-cat="${tagId}">
+          <span class="cat-icon tag-hash">#</span>
+          <span class="cat-label">${escHtml(tag)}</span>
+          <span class="cat-count">${count}</span>
+        </div>`;
+    }
+  }
+
+  // Trash at the bottom
+  const trashCount = counts['Trash'] || 0;
+  const trashActive = state.selectedCategory === 'Trash' ? 'active' : '';
+  html += `<div class="cat-sep"></div>
+    <div class="cat-item ${trashActive}" data-cat="Trash">
+      <span class="cat-icon">🗑️</span>
+      <span class="cat-label">휴지통</span>
+      ${trashCount > 0 ? `<span class="cat-count cat-count-trash">${trashCount}</span>` : ''}
+    </div>`;
+
   categoriesEl.innerHTML = html;
   categoriesEl.querySelectorAll('.cat-item').forEach(el => {
     el.addEventListener('click', () => selectCategory(el.dataset.cat));
@@ -135,6 +167,27 @@ function renderSidebar() {
 
 /* ===== Render: Item List ===== */
 function renderItemList() {
+  if (state.selectedCategory === 'Trash' && state.items.length === 0) {
+    itemListEl.innerHTML = `
+      <div class="list-empty">
+        <div class="list-empty-icon">🗑️</div>
+        <h3>휴지통이 비어있습니다</h3>
+        <p>삭제된 항목이 30일 후 자동으로 영구 삭제됩니다</p>
+      </div>`;
+    return;
+  }
+
+  if (state.selectedCategory === 'Trash' && state.items.length > 0) {
+    const header = `<div class="trash-header">
+      <span>${state.items.length}개 항목</span>
+      <button class="btn-sm btn-danger" id="btnEmptyTrash">휴지통 비우기</button>
+    </div>`;
+    // will be prepended below
+    itemListEl.dataset.trashHeader = header;
+  } else {
+    delete itemListEl.dataset.trashHeader;
+  }
+
   if (state.items.length === 0) {
     itemListEl.innerHTML = `
       <div class="list-empty">
@@ -167,6 +220,7 @@ function renderItemList() {
     const badge = `<span class="badge badge-${isMemo ? 'Memo' : item.category}">${isMemo ? '메모' : getCatLabel(item.category)}</span>`;
     const domain = !isMemo && item.domain ? `<span class="card-domain">${escHtml(item.domain)}</span>` : '';
     const date = `<span class="card-date">${formatDate(item.createdAt)}</span>`;
+    const tags = (item.tags || []).slice(0, 4).map(t => `<span class="tag-chip-sm">#${escHtml(t)}</span>`).join('');
 
     return `
       <div class="item-card ${isSelected ? 'selected' : ''}" data-id="${item.id}">
@@ -175,9 +229,21 @@ function renderItemList() {
           <div class="card-title">${escHtml(title)}</div>
           ${desc ? `<div class="card-desc">${escHtml(desc)}</div>` : ''}
           <div class="card-meta">${badge}${domain}${date}</div>
+          ${tags ? `<div class="card-tags">${tags}</div>` : ''}
         </div>
       </div>`;
   }).join('');
+
+  if (itemListEl.dataset.trashHeader) {
+    itemListEl.innerHTML = itemListEl.dataset.trashHeader + itemListEl.innerHTML;
+    $('btnEmptyTrash')?.addEventListener('click', async () => {
+      if (!confirm('휴지통을 모두 비울까요? 복원할 수 없습니다.')) return;
+      await window.api.emptyTrash();
+      state.selectedItem = null;
+      showToast('휴지통을 비웠습니다');
+      await loadAll();
+    });
+  }
 
   itemListEl.querySelectorAll('.item-card').forEach(el => {
     el.addEventListener('click', () => selectItem(el.dataset.id));
@@ -194,6 +260,51 @@ function renderItemList() {
   });
 }
 
+/* ===== Tag editing in detail ===== */
+function renderDetailTags(item) {
+  const tags = item.tags || [];
+  const chipsHtml = tags.map(t =>
+    `<span class="tag-chip-edit">#${escHtml(t)}<button class="tag-chip-remove" data-tag="${escHtml(t)}">×</button></span>`
+  ).join('');
+  return `
+    <div class="detail-tags-section">
+      <div class="detail-tags-label">태그</div>
+      <div class="detail-tags-row">
+        <div class="detail-tags-chips" id="detailTagChips">${chipsHtml}</div>
+        <input class="tag-add-input" id="tagAddInput" placeholder="태그 추가 (Enter)" maxlength="50" />
+      </div>
+    </div>`;
+}
+
+function bindDetailTagEvents(item) {
+  const input = $('tagAddInput');
+  if (!input) return;
+
+  $('detailTagChips')?.addEventListener('click', async e => {
+    const btn = e.target.closest('.tag-chip-remove');
+    if (!btn) return;
+    const tag = btn.dataset.tag;
+    const tags = (item.tags || []).filter(t => t !== tag);
+    const saved = await window.api.saveItem({ ...item, tags });
+    state.selectedItem = saved;
+    await loadAll();
+    selectItem(saved.id);
+  });
+
+  input.addEventListener('keydown', async e => {
+    if (e.key !== 'Enter' && e.key !== ',') return;
+    e.preventDefault();
+    const tag = input.value.trim().toLowerCase().replace(/[,#\s]+/g, '');
+    if (!tag) return;
+    const tags = [...new Set([...(item.tags || []), tag])];
+    input.value = '';
+    const saved = await window.api.saveItem({ ...item, tags });
+    state.selectedItem = saved;
+    await loadAll();
+    selectItem(saved.id);
+  });
+}
+
 /* ===== Render: Detail ===== */
 function renderDetail() {
   if (!state.selectedItem) {
@@ -206,6 +317,24 @@ function renderDetail() {
 
   const item = state.selectedItem;
   const isMemo = item.type === 'memo';
+  const isTrash = !!item.deletedAt;
+
+  if (isTrash) {
+    detailContentEl.innerHTML = `
+      <div class="detail-title">${escHtml(item.title || item.content || '제목 없음')}</div>
+      ${item.description ? `<div class="detail-desc">${escHtml(item.description)}</div>` : ''}
+      <div class="detail-meta">
+        <span class="badge badge-${isMemo ? 'Memo' : item.category}">${isMemo ? '✏️ 메모' : getCatLabel(item.category)}</span>
+        <span class="detail-date">${formatDate(item.deletedAt)} 삭제됨</span>
+      </div>
+      <div class="detail-actions">
+        <button class="btn-secondary" id="detailRestoreBtn">↩ 복원</button>
+        <button class="btn-danger" id="detailPermDeleteBtn">영구 삭제</button>
+      </div>`;
+    $('detailRestoreBtn')?.addEventListener('click', () => restoreItem(item.id));
+    $('detailPermDeleteBtn')?.addEventListener('click', () => permDeleteItem(item.id));
+    return;
+  }
 
   if (isMemo) {
     detailContentEl.innerHTML = `
@@ -214,9 +343,10 @@ function renderDetail() {
         <span class="detail-date">${formatDate(item.createdAt)}</span>
       </div>
       <div class="detail-memo-text">${escHtml(item.content || '')}</div>
+      ${renderDetailTags(item)}
       <div class="detail-actions">
         <button class="btn-primary" id="detailEditBtn">편집</button>
-        <button class="btn-danger" id="detailDeleteBtn">삭제</button>
+        <button class="btn-danger" id="detailDeleteBtn">휴지통으로</button>
       </div>`;
   } else {
     let thumbHtml = '';
@@ -237,10 +367,11 @@ function renderDetail() {
         ${item.domain ? `<span class="detail-date">${escHtml(item.domain)}</span>` : ''}
         <span class="detail-date">${formatDate(item.createdAt)}</span>
       </div>
+      ${renderDetailTags(item)}
       <div class="detail-actions">
         <button class="btn-primary" id="detailOpenBtn">🔗 열기</button>
         <button class="btn-secondary" id="detailCopyBtn">복사</button>
-        <button class="btn-danger" id="detailDeleteBtn">삭제</button>
+        <button class="btn-danger" id="detailDeleteBtn">휴지통으로</button>
       </div>`;
 
     $('detailUrlLink')?.addEventListener('click', () => window.api.openUrl(item.content));
@@ -253,6 +384,7 @@ function renderDetail() {
 
   $('detailDeleteBtn')?.addEventListener('click', () => deleteItem(item.id));
   $('detailEditBtn')?.addEventListener('click', () => openMemoModal(item));
+  bindDetailTagEvents(item);
 
   detailContentEl.querySelectorAll('img[data-fallback-icon]').forEach(img => {
     img.addEventListener('error', () => {
@@ -289,10 +421,13 @@ function closeSettings() {
 
 /* ===== Data Actions ===== */
 async function loadAll() {
-  [state.items, state.counts] = await Promise.all([
+  const [items, counts] = await Promise.all([
     window.api.getItems({ category: state.selectedCategory, search: state.searchQuery }),
     window.api.getCounts(),
   ]);
+  state.items = items;
+  state.counts = counts;
+  state.tagCounts = counts.tags || {};
   renderSidebar();
   renderItemList();
   renderDetail();
@@ -311,10 +446,24 @@ function selectItem(id) {
 }
 
 async function deleteItem(id) {
-  if (!confirm('정말 삭제하시겠습니까?')) return;
   await window.api.deleteItem(id);
   if (state.selectedItem?.id === id) state.selectedItem = null;
-  showToast('삭제되었습니다');
+  showToast('휴지통으로 이동했습니다');
+  await loadAll();
+}
+
+async function restoreItem(id) {
+  await window.api.restoreItem(id);
+  if (state.selectedItem?.id === id) state.selectedItem = null;
+  showToast('복원되었습니다');
+  await loadAll();
+}
+
+async function permDeleteItem(id) {
+  if (!confirm('영구 삭제하면 복원할 수 없습니다. 계속하시겠습니까?')) return;
+  await window.api.permDeleteItem(id);
+  if (state.selectedItem?.id === id) state.selectedItem = null;
+  showToast('영구 삭제되었습니다');
   await loadAll();
 }
 
@@ -349,10 +498,26 @@ async function addUrl() {
 
 function openMemoModal(existing = null) {
   state.editingMemoId = existing?.id || null;
+  state.editingMemoTags = [...(existing?.tags || [])];
   memoModalTitle.textContent = existing ? '메모 편집' : '새 메모';
   memoTextarea.value = existing?.content || '';
+  renderMemoTagsUI();
   memoModal.style.display = '';
   setTimeout(() => memoTextarea.focus(), 50);
+}
+
+function renderMemoTagsUI() {
+  const el = $('memoTagsDisplay');
+  if (!el) return;
+  el.innerHTML = state.editingMemoTags.map(t =>
+    `<span class="tag-chip-edit">#${escHtml(t)}<button class="tag-chip-remove" data-tag="${escHtml(t)}">×</button></span>`
+  ).join('');
+  el.querySelectorAll('.tag-chip-remove').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.editingMemoTags = state.editingMemoTags.filter(t => t !== btn.dataset.tag);
+      renderMemoTagsUI();
+    });
+  });
 }
 
 function closeMemoModal() {
@@ -364,7 +529,16 @@ function closeMemoModal() {
 async function saveMemo() {
   const content = memoTextarea.value.trim();
   if (!content) { showToast('메모 내용을 입력해주세요'); return; }
-  const item = { type: 'memo', content };
+
+  // collect tags from input field
+  const tagInput = $('memoTagInput');
+  if (tagInput?.value.trim()) {
+    const extra = tagInput.value.trim().toLowerCase().replace(/[,#\s]+/g, '');
+    if (extra && !state.editingMemoTags.includes(extra)) state.editingMemoTags.push(extra);
+    tagInput.value = '';
+  }
+
+  const item = { type: 'memo', content, tags: [...state.editingMemoTags] };
   if (state.editingMemoId) item.id = state.editingMemoId;
   const saved = await window.api.saveItem(item);
   state.selectedItem = saved;
@@ -386,6 +560,19 @@ $('btnCancelMemo').addEventListener('click', closeMemoModal);
 $('btnSaveMemo').addEventListener('click', saveMemo);
 memoModal.addEventListener('click', e => { if (e.target === memoModal) closeMemoModal(); });
 memoTextarea.addEventListener('keydown', e => { if (e.key === 'Enter' && e.metaKey) saveMemo(); });
+
+// Memo tag input Enter handler
+document.addEventListener('keydown', e => {
+  if (e.target?.id !== 'memoTagInput') return;
+  if (e.key !== 'Enter' && e.key !== ',') return;
+  e.preventDefault();
+  const tag = e.target.value.trim().toLowerCase().replace(/[,#\s]+/g, '');
+  if (tag && !state.editingMemoTags.includes(tag)) {
+    state.editingMemoTags.push(tag);
+    renderMemoTagsUI();
+  }
+  e.target.value = '';
+});
 
 let searchTimer;
 searchInput.addEventListener('input', () => {

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+    html, body { width: 100%; height: 72px; overflow: hidden; border-radius: 14px; }
+    body {
+      background: rgba(28, 28, 30, 0.94);
+      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      -webkit-app-region: drag;
+    }
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 18px;
+      height: 72px;
+      -webkit-app-region: no-drag;
+    }
+    .icon { font-size: 20px; flex-shrink: 0; }
+    input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: rgba(255, 255, 255, 0.95);
+      font-size: 14px;
+      caret-color: #007AFF;
+    }
+    input::placeholder { color: rgba(255, 255, 255, 0.32); }
+    .status {
+      font-size: 12px;
+      flex-shrink: 0;
+      white-space: nowrap;
+      min-width: 60px;
+      text-align: right;
+    }
+    .status.saving { color: rgba(255, 255, 255, 0.45); }
+    .status.saved  { color: #30d158; }
+    .status.error  { color: #ff453a; }
+  </style>
+</head>
+<body>
+  <div class="row">
+    <span class="icon">🔗</span>
+    <input id="inp" type="text" placeholder="URL 붙여넣기 · Enter 저장 · Esc 닫기" spellcheck="false" autocomplete="off" />
+    <span class="status" id="status"></span>
+  </div>
+  <script>
+    const inp = document.getElementById('inp');
+    const status = document.getElementById('status');
+
+    window.capture.onFocus(() => {
+      window.capture.readClipboard().then(text => {
+        if (text && /^https?:\/\//i.test(text.trim())) {
+          inp.value = text.trim();
+          inp.select();
+        } else {
+          inp.value = '';
+        }
+        inp.focus();
+        status.textContent = '';
+        status.className = 'status';
+      });
+    });
+
+    inp.addEventListener('keydown', async e => {
+      if (e.key === 'Escape') {
+        inp.value = '';
+        status.textContent = '';
+        window.capture.close();
+        return;
+      }
+      if (e.key === 'Enter') {
+        const url = inp.value.trim();
+        if (!url) return;
+        status.textContent = '저장 중...';
+        status.className = 'status saving';
+        const result = await window.capture.saveUrl(url);
+        if (result.success) {
+          status.textContent = '✓ 저장됨';
+          status.className = 'status saved';
+          inp.value = '';
+          setTimeout(() => window.capture.close(), 700);
+        } else {
+          status.textContent = result.error || '저장 실패';
+          status.className = 'status error';
+        }
+      }
+    });
+  </script>
+</body>
+</html>
