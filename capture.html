@@ -84,6 +84,10 @@
           status.className = 'status saved';
           inp.value = '';
           setTimeout(() => window.capture.close(), 700);
+        } else if (result.duplicate) {
+          status.textContent = '이미 저장된 URL';
+          status.className = 'status error';
+          setTimeout(() => window.capture.close(), 1000);
         } else {
           status.textContent = result.error || '저장 실패';
           status.className = 'status error';

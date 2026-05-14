@@ -237,7 +237,8 @@ function createCaptureWindow() {
     },
   });
   captureWindow.loadFile('capture.html');
-  captureWindow.on('blur', () => captureWindow?.hide());
+  // slight delay on blur so focus() has time to settle before hiding
+  captureWindow.on('blur', () => setTimeout(() => captureWindow?.isVisible() && captureWindow?.hide(), 150));
   captureWindow.on('closed', () => { captureWindow = null; });
 }
 
@@ -245,8 +246,7 @@ function showCaptureWindow() {
   if (!captureWindow || captureWindow.isDestroyed()) createCaptureWindow();
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
   captureWindow.setPosition(Math.round((width - 580) / 2), Math.round(height * 0.22));
-  captureWindow.showInactive();
-  captureWindow.focus();
+  captureWindow.show();
   captureWindow.webContents.send('capture-focus');
 }
 
@@ -273,7 +273,8 @@ app.whenReady().then(() => {
   purgeTrash();
   startFileWatcher();
   createWindow();
-  globalShortcut.register('CommandOrControl+Shift+M', showCaptureWindow);
+  const shortcutOk = globalShortcut.register('CommandOrControl+Shift+M', showCaptureWindow);
+  if (!shortcutOk) console.warn('[SmartMemo] ⌘⇧M 단축키 등록 실패 — 다른 앱이 사용 중일 수 있음');
   app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
 });
 
@@ -499,6 +500,10 @@ ipcMain.handle('capture-save-url', async (_, urlString) => {
     const url = raw.startsWith('http://') || raw.startsWith('https://') ? raw : 'https://' + raw;
     assertSafeUrl(url);
     const u = new URL(url);
+
+    // duplicate check
+    const existing = appData.items.find(i => !i.deletedAt && i.type === 'url' && i.content === url);
+    if (existing) return { success: false, duplicate: true };
 
     const item = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
