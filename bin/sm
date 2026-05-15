@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Smart Memo CLI
+# Usage:
+#   sm <url>       — URL을 Smart Memo에 저장
+#   sm open        — Smart Memo 열기
+#
+# Install (one-time):
+#   ln -sf "$(pwd)/bin/sm" /usr/local/bin/sm
+#   chmod +x /usr/local/bin/sm
+
+set -euo pipefail
+
+usage() {
+  echo "Usage:"
+  echo "  sm <url>    URL을 Smart Memo에 저장"
+  echo "  sm open     Smart Memo 열기"
+  exit 1
+}
+
+if [[ $# -eq 0 ]]; then usage; fi
+
+CMD="$1"
+
+if [[ "$CMD" == "open" ]]; then
+  open "smartmemo://open"
+  exit 0
+fi
+
+# encode URL for the scheme
+ENCODED=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1], safe=''))" "$CMD" 2>/dev/null \
+  || node -e "process.stdout.write(encodeURIComponent(process.argv[1]))" "$CMD" 2>/dev/null \
+  || echo "$CMD")
+
+open "smartmemo://capture?url=${ENCODED}"
