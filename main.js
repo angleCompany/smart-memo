@@ -6,11 +6,10 @@ const os = require('os');
 const fs = require('fs');
 
 /* ===== URL Scheme (smartmemo://) ===== */
-// dev mode: process.defaultApp=true → electron binary만 등록되면 앱 경로 없이 실행됨
-// 해결: 개발 시 execPath + argv[1]로 앱 경로 명시
-if (process.defaultApp) {
-  app.setAsDefaultProtocolClient('smartmemo', process.execPath, [path.resolve(process.argv[1])]);
-} else {
+// 개발 모드(npm start)에서는 등록하지 않는다.
+// 등록하면 설치된 앱의 scheme 등록을 덮어써서 매번 dev Electron 바이너리가 새로 뜨는 문제 발생.
+// 프로덕션 패키지에서만 등록하면 설치 앱이 scheme을 안정적으로 유지한다.
+if (!process.defaultApp) {
   app.setAsDefaultProtocolClient('smartmemo');
 }
 
