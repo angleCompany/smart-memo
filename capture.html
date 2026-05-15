@@ -80,14 +80,13 @@
         status.className = 'status saving';
         const result = await window.capture.saveUrl(url);
         if (result.success) {
-          status.textContent = '✓ 저장됨';
-          status.className = 'status saved';
           inp.value = '';
-          setTimeout(() => window.capture.close(), 700);
+          const domain = (() => { try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return url; } })();
+          window.capture.showToast('ok', '저장됨', domain);
+          window.capture.close();
         } else if (result.duplicate) {
-          status.textContent = '이미 저장된 URL';
-          status.className = 'status error';
-          setTimeout(() => window.capture.close(), 1000);
+          window.capture.showToast('dup', '이미 저장된 링크', url);
+          window.capture.close();
         } else {
           status.textContent = result.error || '저장 실패';
           status.className = 'status error';

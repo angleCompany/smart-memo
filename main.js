@@ -5,6 +5,16 @@ const path = require('path');
 const os = require('os');
 const fs = require('fs');
 
+/* ===== URL Scheme (smartmemo://) ===== */
+app.setAsDefaultProtocolClient('smartmemo');
+
+const _pendingUrls = [];
+app.on('open-url', (event, url) => {
+  event.preventDefault();
+  if (app.isReady()) handleUrlScheme(url);
+  else _pendingUrls.push(url);
+});
+
 const { createFileStorage }   = require('./src/infrastructure/fileStorage');
 const { createConfigStore }   = require('./src/infrastructure/configStore');
 const { createFileWatcher }   = require('./src/infrastructure/fileWatcher');
@@ -78,6 +88,57 @@ function createCaptureWindow() {
   captureWindow.on('closed', () => { captureWindow = null; });
 }
 
+/* ===== Receipt Toast ===== */
+function showReceiptToast(type, label, sub = '') {
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+  const W = 300, H = 52, MARGIN = 16;
+  const win = new BrowserWindow({
+    x: width - W - MARGIN,
+    y: height - H - MARGIN,
+    width: W,
+    height: H,
+    frame: false,
+    transparent: true,
+    alwaysOnTop: true,
+    resizable: false,
+    focusable: false,
+    skipTaskbar: true,
+    hasShadow: false,
+    webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true },
+  });
+  win.setIgnoreMouseEvents(true);
+  const q = new URLSearchParams({ type, label, sub }).toString();
+  win.loadFile('receipt.html', { query: { type, label, sub } });
+  // dismiss after 1.8s
+  const dismiss = () => { if (!win.isDestroyed()) win.close(); };
+  setTimeout(dismiss, 1800);
+}
+
+/* ===== URL Scheme handler ===== */
+async function handleUrlScheme(rawUrl) {
+  try {
+    const u = new URL(rawUrl);
+    if (u.hostname === 'capture') {
+      const targetUrl = u.searchParams.get('url');
+      if (!targetUrl) return;
+      const result = await captureService.captureUrl(decodeURIComponent(targetUrl));
+      if (result.success) {
+        const { getDomain } = require('./src/domain/url');
+        showReceiptToast('ok', '저장됨', getDomain(targetUrl) || targetUrl);
+      } else if (result.duplicate) {
+        showReceiptToast('dup', '이미 저장된 링크', targetUrl);
+      } else {
+        showReceiptToast('err', result.error || '저장 실패');
+      }
+    } else if (u.hostname === 'open') {
+      if (!mainWindow || mainWindow.isDestroyed()) createWindow();
+      else { mainWindow.show(); mainWindow.focus(); }
+    }
+  } catch (e) {
+    console.error('[SmartMemo] URL Scheme 오류:', e.message);
+  }
+}
+
 function showCaptureWindow() {
   if (!captureWindow || captureWindow.isDestroyed()) createCaptureWindow();
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
@@ -94,6 +155,9 @@ app.whenReady().then(() => {
 
   const shortcutOk = globalShortcut.register('CommandOrControl+Shift+M', showCaptureWindow);
   if (!shortcutOk) console.warn('[SmartMemo] ⌘⇧M 단축키 등록 실패');
+
+  // process URLs received before app was ready (cold start via URL scheme)
+  for (const url of _pendingUrls.splice(0)) handleUrlScheme(url);
 
   app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
 });
@@ -209,6 +273,10 @@ ipcMain.handle('capture-save-url', async (_, urlString) => {
 });
 
 ipcMain.handle('capture-close', () => { captureWindow?.hide(); });
+
+ipcMain.handle('capture-show-toast', (_, { type, label, sub = '' }) => {
+  showReceiptToast(type, label, sub);
+});
 
 ipcMain.handle('open-in-finder', (_, dirPath) => {
   const icloudBase = getICloudBase();
