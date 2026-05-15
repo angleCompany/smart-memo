@@ -6,7 +6,13 @@ const os = require('os');
 const fs = require('fs');
 
 /* ===== URL Scheme (smartmemo://) ===== */
-app.setAsDefaultProtocolClient('smartmemo');
+// dev mode: process.defaultApp=true → electron binary만 등록되면 앱 경로 없이 실행됨
+// 해결: 개발 시 execPath + argv[1]로 앱 경로 명시
+if (process.defaultApp) {
+  app.setAsDefaultProtocolClient('smartmemo', process.execPath, [path.resolve(process.argv[1])]);
+} else {
+  app.setAsDefaultProtocolClient('smartmemo');
+}
 
 const _pendingUrls = [];
 app.on('open-url', (event, url) => {
