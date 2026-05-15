@@ -1,0 +1,51 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "smart-memo",
+  "title": "Smart Memo",
+  "description": "마찰 없이 URL을 Smart Memo에 저장합니다",
+  "icon": "assets/icon.png",
+  "author": "sjuyi",
+  "categories": ["Productivity"],
+  "license": "MIT",
+  "commands": [
+    {
+      "name": "capture-clipboard",
+      "title": "클립보드 URL 저장",
+      "subtitle": "Smart Memo",
+      "description": "클립보드의 URL을 즉시 Smart Memo에 저장합니다",
+      "mode": "no-view"
+    },
+    {
+      "name": "capture-url",
+      "title": "URL 저장",
+      "subtitle": "Smart Memo",
+      "description": "URL을 입력해서 Smart Memo에 저장합니다",
+      "mode": "view"
+    },
+    {
+      "name": "open",
+      "title": "Smart Memo 열기",
+      "subtitle": "Smart Memo",
+      "description": "Smart Memo 앱을 엽니다",
+      "mode": "no-view"
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.91.2"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "^1.0.11",
+    "@types/node": "20.8.10",
+    "@types/react": "18.3.3",
+    "eslint": "^8.57.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.4.5"
+  },
+  "scripts": {
+    "build": "ray build",
+    "dev": "ray develop",
+    "fix-lint": "ray lint --fix",
+    "lint": "ray lint",
+    "publish": "npx @raycast/api@latest publish"
+  }
+}

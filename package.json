@@ -25,6 +25,7 @@
       "renderer.js",
       "index.html",
       "capture.html",
+      "receipt.html",
       "styles.css",
       "package.json",
       "src/**"
