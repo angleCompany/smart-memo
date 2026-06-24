@@ -1,0 +1,42 @@
+name: Release App
+
+on:
+  push:
+    tags:
+      - 'v*' # v1.0.0, v1.1.0 등 태그가 푸시될 때 트리거
+
+jobs:
+  release:
+    name: Build and Release
+    runs-on: macos-latest
+    permissions:
+      contents: write # GitHub Release 작성을 위해 쓰기 권한이 필요합니다.
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Electron App
+        run: |
+          # 코드 사인을 우회하고 빌드 진행
+          export CSC_IDENTITY_AUTO_DISCOVERY=false
+          npm run build:all
+
+      - name: Create GitHub Release and Upload Artifacts
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/Smart-Memo-*.dmg
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
