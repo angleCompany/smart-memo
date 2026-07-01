@@ -340,3 +340,4 @@ Clean Architecture (Hexagonal) — Domain → Application → Infrastructure 단
 ## 라이선스
 
 MIT © 2026 angleCompany
+
