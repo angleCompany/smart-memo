@@ -35,23 +35,36 @@ macOS용 링크 수집 앱 — URL을 던지면 끝. 정리 없이도 나중에 
 
 ---
 
-## 설치
+## 📥 설치 및 다운로드
 
-### DMG 직접 설치 (권장)
+### 1. 배포판 다운로드 (권장)
 
-1. [Releases](https://github.com/angleCompany/smart-memo/releases/latest)에서 DMG 다운로드
-   - Apple Silicon (M1·M2·M3·M4): `Smart-Memo-1.0.0-arm64.dmg`
-   - Intel Mac: `Smart-Memo-1.0.0-x64.dmg`
-2. DMG 열기 → `Smart Memo.app`을 `/Applications`로 드래그
+GitHub 저장소의 최신 Releases 페이지에서 본인의 Mac 사양에 맞는 설치 파일(`.dmg`)을 다운로드합니다.
+* 🔗 **[최신 버전 다운로드 받기](https://github.com/angleCompany/smart-memo/releases/latest)**
+  * **Apple Silicon (M1·M2·M3·M4 등)**: `Smart-Memo-X.Y.Z-arm64.dmg`
+  * **Intel Mac**: `Smart-Memo-X.Y.Z-x64.dmg`
 
-> **"확인되지 않은 개발자" 경고가 뜨는 경우**
+### 2. 설치 과정
+
+1. 다운로드한 `.dmg` 파일을 더블 클릭하여 마운트합니다.
+2. 열린 창에서 **Smart Memo** 앱 아이콘을 **Applications (응용 프로그램)** 폴더로 드래그 앤 드롭합니다.
+3. 이제 Launchpad 또는 응용 프로그램 폴더에서 앱을 찾아 실행할 수 있습니다.
+
+> [!IMPORTANT]
+> **⚠️ "확인되지 않은 개발자" 경고가 뜨는 경우 해결 방법**
 >
-> **방법 A** — Finder에서 앱 우클릭 → 열기 → 열기
+> 본 앱은 오픈소스 앱으로 Apple 개발자 유료 서명이 적용되어 있지 않아 최초 실행 시 경고창이 뜰 수 있습니다. 아래 방법 중 하나로 실행을 허용해 주세요.
 >
-> **방법 B** — 터미널:
-> ```bash
-> xattr -cr "/Applications/Smart Memo.app"
-> ```
+> * **방법 A (권장): Finder에서 실행 허용**
+>   1. Finder의 **응용 프로그램** 폴더에서 `Smart Memo` 앱을 찾습니다.
+>   2. `Control` 키를 누른 상태에서 앱 아이콘을 클릭(우클릭)하고 **[열기]**를 선택합니다.
+>   3. 경고창에서 다시 한번 **[열기]**를 누르면 이후에는 정상적으로 더블 클릭하여 실행할 수 있습니다.
+>
+> * **방법 B (터미널 사용): 격리 해제**
+>   터미널을 열고 아래 명령어를 입력하여 macOS의 격리 속성(quarantine)을 제거합니다.
+>   ```bash
+>   xattr -cr "/Applications/Smart Memo.app"
+>   ```
 
 ### 소스에서 직접 실행
 
@@ -66,20 +79,19 @@ npm start
 
 ---
 
-## 사용 방법
+## 💡 사용 방법
 
-### 1. 글로벌 단축키 (⌘⇧M)
+### 🚀 1. 초고속 URL 저장 (글로벌 단축키 `⌘ + ⇧ + M`)
 
-어느 앱에서든 **⌘⇧M** 을 누르면 캡처 창이 화면 상단에 나타납니다.
+Smart Memo의 핵심 기능입니다. 다른 앱을 사용 중이더라도 단축키 하나로 1초 만에 URL을 수집합니다.
 
-```
-URL 붙여넣기 또는 입력 → Enter로 저장
-```
-
-- 클립보드에 `http://` 또는 `https://`로 시작하는 텍스트가 있으면 자동 입력
-- 저장 성공: 창이 즉시 닫히고 우하단에 Capture-Receipt 토스트 표시
-- 중복 URL: "이미 저장된 링크" 토스트 후 닫힘
-- `Esc` — 취소
+1. **단축키 실행**: 키보드에서 **`Command(⌘) + Shift(⇧) + M`**을 누릅니다.
+2. **입력 폼 활성화**: 화면 상단에 심플한 URL 입력창이 나타납니다.
+   * *Tip*: 클립보드에 이미 복사해 둔 URL이 있다면 **자동으로 입력창에 채워집니다.**
+3. **저장 완료**: **`Enter`** 키를 누르면 저장이 완료되고 창이 닫힙니다.
+   * 저장에 성공하면 화면 우하단에 메타데이터가 파싱된 토스트 알림(Capture-Receipt)이 나타납니다.
+   * 이미 저장된 중복 URL인 경우 경고 알림을 보내줍니다.
+   * 취소하고 닫으려면 **`Esc`** 키를 누릅니다.
 
 ---
 
@@ -212,17 +224,35 @@ sm "$(curl -Ls -o /dev/null -w '%{url_effective}' https://bit.ly/xyz)"
 
 ---
 
-## 개발
+## 🛠️ 개발 및 배포
+
+### 로컬 개발 및 테스트
 
 ```bash
 npm install          # 의존성 설치
-npm start            # 앱 실행
-npm test             # 테스트 전체 실행 (311개)
-npm run test:watch   # watch 모드
-npm run build:arm64  # Apple Silicon DMG 빌드
-npm run build:x64    # Intel DMG 빌드
-npm run build        # 두 아키텍처 동시 빌드
+npm start            # 앱 로컬 실행 (개발 버전)
+npm test             # 전체 테스트 실행 (311개 유닛/통합 테스트)
+npm run test:watch   # Vitest watch 모드 실행
 ```
+
+### 패키징 및 빌드
+
+```bash
+npm run build:arm64  # Apple Silicon(M시리즈) macOS DMG 빌드
+npm run build:x64    # Intel macOS DMG 빌드
+npm run build        # 두 아키텍처용 DMG 빌드
+```
+
+### 🤖 자동 배포 (CI/CD)
+
+이 저장소는 GitHub Actions를 통해 자동 배포가 활성화되어 있습니다.
+1. [package.json](file:///Users/sjuyi/Documents/Workspace/smart_memo/package.json)의 `"version"` 값을 수정하고 코드를 푸시합니다.
+2. 터미널에서 아래와 같이 새 버전 태그를 붙여 원격 저장소에 푸시합니다.
+   ```bash
+   git tag v1.0.1
+   git push origin v1.0.1
+   ```
+3. GitHub Actions가 자동으로 macOS 인스턴스에서 앱을 빌드하고 최신 릴리즈 페이지에 빌드 파일(`.dmg`)을 업로드합니다.
 
 ### 프로젝트 구조
 

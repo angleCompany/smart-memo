@@ -12,10 +12,18 @@
     "build": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac",
     "build:x64": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac --x64",
     "build:arm64": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac --arm64",
-    "build:all": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac --x64 --arm64"
+    "build:all": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac --x64 --arm64",
+    "deploy:arm64": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac --arm64 --config.npmRebuild=false --publish always"
   },
   "build": {
     "appId": "com.sjuyi.smartmemo",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "angleCompany",
+        "repo": "smart-memo"
+      }
+    ],
     "productName": "Smart Memo",
     "copyright": "Copyright © 2026 sjuyi",
     "files": [
