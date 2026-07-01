@@ -27,39 +27,26 @@ A smart bookmark & memo app for macOS — paste a URL and it automatically fetch
 
 ## Installation
 
-### Option 1 — Homebrew (Recommended)
+### Option 1 — Direct DMG Install (Recommended)
 
-```bash
-# 1. Add the tap
-brew tap anglecompany/smartmemo
+1. Download the DMG from the [Releases page](https://github.com/angleCompany/smart-memo/releases/latest)
+   - Apple Silicon (M1/M2/M3/M4 etc.): `Smart-Memo-X.Y.Z-arm64.dmg`
+   - Intel Mac: `Smart-Memo-X.Y.Z-x64.dmg`
+2. Open the DMG and drag `Smart Memo.app` to `/Applications`
 
-# 2. Install
-brew install --cask smart-memo
-```
-
-> **If macOS shows a security warning**
-> The app is currently distributed without a code-signing certificate. Resolve with one of the following:
+> **If macOS shows a security warning ("Unidentified Developer")**
+> The app is distributed without an Apple Developer certificate. Resolve with one of the following:
 >
 > **Option A** — Right-click `Smart Memo.app` in Finder → **Open** → Click **Open**
 >
 > **Option B** — Run in Terminal:
 > ```bash
-> xattr -cr /Applications/Smart\ Memo.app
+> xattr -cr "/Applications/Smart Memo.app"
 > ```
 
 ---
 
-### Option 2 — Direct DMG Install
-
-1. Download the DMG from the [Releases page](https://github.com/angleCompany/smart-memo/releases/latest)
-   - Apple Silicon (M1/M2/M3/M4): `Smart-Memo-1.0.0-arm64.dmg`
-   - Intel Mac: `Smart-Memo-1.0.0-x64.dmg`
-2. Open the DMG and drag `Smart Memo.app` to `/Applications`
-3. If a security warning appears, follow Option A or B above
-
----
-
-### Option 3 — Run from Source
+### Option 2 — Run from Source
 
 ```bash
 git clone https://github.com/angleCompany/smart-memo.git
@@ -74,9 +61,7 @@ npm start
 
 ## Update
 
-```bash
-brew upgrade --cask smart-memo
-```
+To update the app, download the latest `.dmg` from the [Releases page](https://github.com/angleCompany/smart-memo/releases/latest) and replace the existing app in the `/Applications` folder.
 
 ---
 
