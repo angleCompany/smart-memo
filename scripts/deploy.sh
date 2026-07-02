@@ -37,5 +37,5 @@ git push origin main
 git push origin "$NEW_VERSION"
 
 echo "🎉 성공적으로 푸시되었습니다!"
-echo "이제 GitHub Actions가 동작하여 자동으로 앱을 빌드하고 GitHub Release에 `.dmg` 설치 파일을 업로드합니다."
+echo "이제 GitHub Actions가 동작하여 자동으로 앱을 빌드하고 GitHub Release에 .dmg 설치 파일을 업로드합니다."
 echo "진행 상황은 GitHub 저장소의 'Actions' 탭에서 확인하실 수 있습니다."

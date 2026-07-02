@@ -10,8 +10,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "build": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac",
-    "build:x64": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac --x64",
-    "build:arm64": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac --arm64",
+    "build:x64": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac --x64 --config.mac.target=dmg",
+    "build:arm64": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac --arm64 --config.mac.target=dmg",
     "build:all": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac --x64 --arm64",
     "deploy:arm64": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac --arm64 --config.npmRebuild=false --publish always"
   },
