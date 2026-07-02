@@ -5,6 +5,7 @@ import { renderItemList } from './src/ui/views/itemList.js';
 import { renderDetail } from './src/ui/views/detail.js';
 import { openMemoModal, closeMemoModal, renderMemoTagsUI } from './src/ui/views/modals.js';
 import { updateSyncChip, showSyncNotification } from './src/ui/views/sync.js';
+import { getMemoMarkdown, handleEditorKeydown, handleEditorPaste, refreshEditorPlaceholder } from './src/ui/views/memoEditor.js';
 
 /* ===== DOM refs ===== */
 const $ = id => document.getElementById(id);
@@ -14,7 +15,7 @@ const detailEmptyEl      = $('detailEmpty');
 const detailContentEl    = $('detailContent');
 const urlInput           = $('urlInput');
 const memoModal          = $('memoModal');
-const memoTextarea       = $('memoTextarea');
+const memoEditor         = $('memoEditor');
 const memoModalTitle     = $('memoModalTitle');
 const settingsModal      = $('settingsModal');
 const icloudToggle       = $('icloudToggle');
@@ -23,7 +24,7 @@ const syncNotification   = $('syncNotification');
 const syncNotificationText = $('syncNotificationText');
 const memoTagsDisplay    = $('memoTagsDisplay');
 
-const memoElements = { modal: memoModal, title: memoModalTitle, textarea: memoTextarea, tagsDisplay: memoTagsDisplay };
+const memoElements = { modal: memoModal, title: memoModalTitle, editor: memoEditor, tagsDisplay: memoTagsDisplay };
 const settingsElements = {
   shareSection:         $('shareSection'),
   dataPathBox:          $('dataPathBox'),
@@ -173,7 +174,7 @@ async function addUrl() {
 }
 
 async function saveMemo() {
-  const content = memoTextarea.value.trim();
+  const content = getMemoMarkdown(memoEditor).trim();
   if (!content) { showToast('메모 내용을 입력해주세요'); return; }
 
   const tagInput = $('memoTagInput');
@@ -224,7 +225,12 @@ $('btnCloseMemo').addEventListener('click', () => closeMemoModal(memoElements, s
 $('btnCancelMemo').addEventListener('click', () => closeMemoModal(memoElements, state));
 $('btnSaveMemo').addEventListener('click', saveMemo);
 memoModal.addEventListener('click', e => { if (e.target === memoModal) closeMemoModal(memoElements, state); });
-memoTextarea.addEventListener('keydown', e => { if (e.key === 'Enter' && e.metaKey) saveMemo(); });
+memoEditor.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.metaKey) { e.preventDefault(); saveMemo(); return; }
+  handleEditorKeydown(e, memoEditor);
+});
+memoEditor.addEventListener('input', () => refreshEditorPlaceholder(memoEditor));
+memoEditor.addEventListener('paste', e => handleEditorPaste(e, memoEditor));
 
 document.addEventListener('keydown', e => {
   if (e.target?.id !== 'memoTagInput') return;

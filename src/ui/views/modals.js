@@ -1,18 +1,19 @@
 import { escHtml } from '../utils.js';
+import { setMemoMarkdown, focusEditor } from './memoEditor.js';
 
 export function openMemoModal(elements, state, existing = null) {
   state.editingMemoId = existing?.id || null;
   state.editingMemoTags = [...(existing?.tags || [])];
   elements.title.textContent = existing ? '메모 편집' : '새 메모';
-  elements.textarea.value = existing?.content || '';
+  setMemoMarkdown(elements.editor, existing?.content || '');
   renderMemoTagsUI(elements.tagsDisplay, state);
   elements.modal.style.display = '';
-  setTimeout(() => elements.textarea.focus(), 50);
+  setTimeout(() => focusEditor(elements.editor), 50);
 }
 
 export function closeMemoModal(elements, state) {
   elements.modal.style.display = 'none';
-  elements.textarea.value = '';
+  setMemoMarkdown(elements.editor, '');
   state.editingMemoId = null;
 }
 

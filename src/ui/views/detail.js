@@ -1,5 +1,6 @@
 import { escHtml, formatDate, showToast } from '../utils.js';
 import { getCatLabel, getCatIcon } from '../categories.js';
+import { mdToHtml } from '../markdown.js';
 
 function tagsHtml(item) {
   const chips = (item.tags || []).map(t =>
@@ -90,7 +91,7 @@ export function renderDetail(emptyEl, contentEl, state, actions) {
         <span class="badge badge-Memo">✏️ 메모</span>
         <span class="detail-date">${formatDate(item.createdAt)}</span>
       </div>
-      <div class="detail-memo-text">${escHtml(item.content || '')}</div>
+      <div class="detail-memo-text md-rendered">${mdToHtml(item.content || '')}</div>
       ${tagsHtml(item)}
       <div class="detail-actions">
         <button class="btn-primary" id="detailEditBtn">편집</button>

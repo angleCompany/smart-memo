@@ -1,5 +1,6 @@
 import { escHtml, formatDate } from '../utils.js';
 import { getCatLabel, getCatIcon } from '../categories.js';
+import { memoPreview } from '../markdown.js';
 
 export function renderItemList(el, state, { onSelectItem, onEmptyTrash }) {
   if (state.selectedCategory === 'Trash' && state.items.length === 0) {
@@ -33,12 +34,14 @@ export function renderItemList(el, state, { onSelectItem, onEmptyTrash }) {
         : `<div class="card-thumb-placeholder">${getCatIcon(item.category)}</div>`;
     }
 
+    const preview = isMemo ? memoPreview(item.content || '') : null;
+
     const title = isMemo
-      ? (item.content?.split('\n')[0]?.slice(0, 80) || '(빈 메모)')
+      ? (preview.title.slice(0, 80) || '(빈 메모)')
       : (item.title || item.content || '제목 없음');
 
     const desc = isMemo
-      ? (item.content?.split('\n').slice(1).join(' ')?.slice(0, 120) || '')
+      ? preview.desc.slice(0, 120)
       : (item.description?.slice(0, 120) || '');
 
     const badge = `<span class="badge badge-${isMemo ? 'Memo' : item.category}">${isMemo ? '메모' : getCatLabel(item.category)}</span>`;

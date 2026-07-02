@@ -587,6 +587,36 @@ html, body {
   min-height: 100px;
 }
 
+/* 렌더링된 마크다운(상세 보기) */
+.detail-memo-text.md-rendered { white-space: normal; }
+.md-rendered h1 { font-size: 24px; font-weight: 700; margin: 12px 0 6px; line-height: 1.35; }
+.md-rendered h2 { font-size: 20px; font-weight: 700; margin: 12px 0 6px; line-height: 1.4; }
+.md-rendered h3 { font-size: 17px; font-weight: 600; margin: 10px 0 4px; line-height: 1.45; }
+.md-rendered h1:first-child,
+.md-rendered h2:first-child,
+.md-rendered h3:first-child,
+.md-rendered p:first-child { margin-top: 0; }
+.md-rendered p { margin: 6px 0; }
+.md-rendered ul,
+.md-rendered ol { margin: 6px 0; padding-left: 1.5em; }
+.md-rendered li { margin: 2px 0; }
+.md-rendered blockquote {
+  margin: 8px 0;
+  padding: 2px 12px;
+  border-left: 3px solid var(--accent);
+  color: var(--text2);
+  font-style: italic;
+}
+.md-rendered strong { font-weight: 700; }
+.md-rendered em { font-style: italic; }
+.md-rendered code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+  background: var(--border);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
 .divider {
   height: 1px;
   background: var(--border);
@@ -646,7 +676,8 @@ html, body {
 
 .btn-close:hover { background: var(--border); }
 
-.modal textarea {
+/* ===== 마크다운 에디터 (contenteditable) ===== */
+.memo-editor {
   flex: 1;
   border: none;
   background: transparent;
@@ -655,13 +686,53 @@ html, body {
   color: var(--text);
   font-family: inherit;
   outline: none;
-  resize: none;
   line-height: 1.7;
-  min-height: 300px;
+  min-height: 260px;
+  max-height: 48vh;
+  overflow-y: auto;
   user-select: text;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
-.modal textarea::placeholder { color: var(--text3); }
+.memo-editor .md-block {
+  position: relative;
+  min-height: 1.5em;
+}
+
+/* 마커에 대응하는 실시간 모양 */
+.memo-editor .md-h1 { font-size: 24px; font-weight: 700; line-height: 1.35; margin: 2px 0; }
+.memo-editor .md-h2 { font-size: 20px; font-weight: 700; line-height: 1.4;  margin: 2px 0; }
+.memo-editor .md-h3 { font-size: 17px; font-weight: 600; line-height: 1.45; margin: 2px 0; }
+.memo-editor .md-quote {
+  padding-left: 12px;
+  border-left: 3px solid var(--accent);
+  color: var(--text2);
+  font-style: italic;
+}
+.memo-editor .md-ul,
+.memo-editor .md-ol { padding-left: 1.6em; }
+.memo-editor .md-ul::before {
+  content: "•";
+  position: absolute;
+  left: 0.45em;
+  color: var(--text2);
+}
+.memo-editor .md-ol::before {
+  content: attr(data-num) ".";
+  position: absolute;
+  left: 0.15em;
+  color: var(--text2);
+}
+
+/* 빈 문단 하나일 때만 표시되는 플레이스홀더 */
+.memo-editor .md-block[data-ph]::before {
+  content: attr(data-ph);
+  position: absolute;
+  left: 0;
+  color: var(--text3);
+  pointer-events: none;
+}
 
 .modal-footer {
   display: flex;
