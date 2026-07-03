@@ -7,6 +7,8 @@ macOS용 링크 수집 앱 — URL을 던지면 끝. 정리 없이도 나중에 
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Tests](https://img.shields.io/badge/tests-341%20passing-brightgreen)
 
+**한국어 · [English](README.en.md) · [中文](README.zh.md) · [日本語](README.ja.md)**
+
 ---
 
 ## 핵심 가치
@@ -225,7 +227,7 @@ npm run build        # 두 아키텍처용 DMG 빌드
 ### 🤖 자동 배포 (CI/CD)
 
 이 저장소는 GitHub Actions를 통해 자동 배포가 활성화되어 있습니다.
-1. [package.json](file:///Users/sjuyi/Documents/Workspace/smart_memo/package.json)의 `"version"` 값을 수정하고 코드를 푸시합니다.
+1. `package.json`의 `"version"` 값을 수정하고 코드를 푸시합니다.
 2. 터미널에서 아래와 같이 새 버전 태그를 붙여 원격 저장소에 푸시합니다.
    ```bash
    git tag v1.0.1

@@ -1,52 +1,73 @@
-# 📌 Smart Memo
+# Smart Memo
 
-macOS 智能书签与备忘录应用 — 粘贴 URL 后自动获取标题、描述和缩略图，并自动分类整理。
+macOS 链接收集应用 —— 把 URL 丢进来就完事。无需整理即可保存，日后用搜索找回。
 
-![Platform](https://img.shields.io/badge/platform-macOS-lightgrey?logo=apple)
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Platform](https://img.shields.io/badge/platform-macOS%2012%2B-lightgrey?logo=apple)
+![Version](https://img.shields.io/badge/version-1.1.1-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
+![Tests](https://img.shields.io/badge/tests-341%20passing-brightgreen)
 
 **[한국어](README.md) · [English](README.en.md) · 中文 · [日本語](README.ja.md)**
 
 ---
 
-## 主要功能
+## 核心价值
+
+> **Capture-to-saved < 1 秒。** 无需打开应用、无需切换标签页即可保存 URL。
+
+---
+
+## 主要功能一览
 
 | 功能 | 说明 |
 |------|------|
-| 🔗 **URL 自动获取元数据** | 粘贴 URL 后自动获取标题、描述和缩略图 |
-| 🎬 **YouTube 专项支持** | 通过 oEmbed API 精准获取视频标题、频道名和缩略图 |
-| 🏷️ **自动分类** | 根据域名自动归类：视频、代码、文章、社交、韩文等 |
-| ✏️ **快速备忘录** | 自由格式文本记录（⌘+Enter 快速保存） |
-| ☁️ **iCloud Drive 同步** | 同一 Apple 账号下所有 Mac 自动同步 |
-| 👥 **跨账号共享** | 通过 iCloud Drive 共享文件夹与其他 Apple 账号共享数据 |
-| 🔍 **全文搜索** | 跨标题、URL、内容、域名统一检索 |
-| 📤 **导出 / 导入** | JSON 格式备份与还原 |
+| ⌘⇧M 全局快捷键 | 在任何应用中即时呼出 URL 输入框 |
+| URL Scheme | `smartmemo://capture?url=...` 无需启动应用即可保存 |
+| CLI | `sm <url>` 在终端中保存 |
+| Capture-Receipt 提示 | 保存后无需切换应用，右下角显示 1.8 秒通知 |
+| URL 元数据自动获取 | 自动解析标题、描述、缩略图和分类 |
+| YouTube 专项支持 | 通过 oEmbed 精准获取视频标题、频道和缩略图 |
+| 标签系统 | 自由添加标签，侧边栏按标签筛选 |
+| 自动分类 | 基于域名分类：Video · Code · Article · Social 等 |
+| 全文搜索 | 跨标题、URL、域名、备忘录统一检索 |
+| 回收站 | 软删除（保留 30 天），恢复 · 彻底删除 |
+| iCloud 同步 | 同一 Apple 账号下的所有 Mac 自动同步 |
+| 导出 / 导入 | JSON 备份与迁移 |
 
 ---
 
-## 安装方式
+## 📥 安装与下载
 
-### 方式一 — 直接安装 DMG（推荐）
+### 1. 下载发行版（推荐）
 
-1. 从 [Releases 页面](https://github.com/angleCompany/smart-memo/releases/latest) 下载 DMG
-   - Apple Silicon（M1/M2/M3/M4等）：`Smart-Memo-X.Y.Z-arm64.dmg`
-   - Intel Mac：`Smart-Memo-X.Y.Z-x64.dmg`
-2. 打开 DMG，将 `Smart Memo.app` 拖入 `/Applications` 文件夹
+从 GitHub 仓库的最新 Releases 页面下载符合你 Mac 配置的安装文件（`.dmg`）。
+* 🔗 **[下载最新版本](https://github.com/angleCompany/smart-memo/releases/latest)**
+  * **Apple Silicon（M1/M2/M3/M4 等）**：`Smart-Memo-X.Y.Z-arm64.dmg`
+  * **Intel Mac**：`Smart-Memo-X.Y.Z-x64.dmg`
 
-> **如果 macOS 显示安全警告（未验证的开发者）**
-> 本应用目前未进行 Apple 开发者证书签名，首次运行时请通过以下任一方式解决：
+### 2. 安装步骤
+
+1. 双击下载的 `.dmg` 文件进行挂载。
+2. 在打开的窗口中，将 **Smart Memo** 应用图标拖放到 **应用程序（Applications）** 文件夹。
+3. 现在即可在 Launchpad 或应用程序文件夹中找到并启动应用。
+
+> [!IMPORTANT]
+> **⚠️ 出现"未验证的开发者"警告时的解决方法**
 >
-> **方式 A** — 在 Finder 中右键点击 `Smart Memo.app` → **打开** → 点击 **打开**
+> 本应用为开源应用，未使用 Apple 开发者付费签名，因此首次运行时可能出现警告。请通过以下任一方法允许运行。
 >
-> **方式 B** — 在终端中执行：
-> ```bash
-> xattr -cr "/Applications/Smart Memo.app"
-> ```
+> * **方法 A（推荐）：在 Finder 中允许运行**
+>   1. 在 Finder 的 **应用程序** 文件夹中找到 `Smart Memo` 应用。
+>   2. 按住 `Control` 键点击应用图标（右键点击），选择 **[打开]**。
+>   3. 在警告对话框中再次点击 **[打开]**，之后即可正常双击启动。
+>
+> * **方法 B（使用终端）：解除隔离**
+>   打开终端，输入以下命令以移除 macOS 的隔离属性（quarantine）。
+>   ```bash
+>   xattr -cr "/Applications/Smart Memo.app"
+>   ```
 
----
-
-### 方式二 — 从源码运行
+### 从源码直接运行
 
 ```bash
 git clone https://github.com/angleCompany/smart-memo.git
@@ -55,51 +76,238 @@ npm install
 npm start
 ```
 
-**环境要求：** Node.js 18+、macOS 12+
+环境要求：Node.js 18+、macOS 12+
 
 ---
 
-## 更新
+## 💡 使用方法
 
-要更新应用，请从 [Releases 页面](https://github.com/angleCompany/smart-memo/releases/latest) 下载最新的 `.dmg`，并替换 `/Applications` 文件夹中的现有应用。
+### 🚀 1. 极速 URL 保存（全局快捷键 `⌘ + ⇧ + M`）
+
+这是 Smart Memo 的核心功能。即使正在使用其他应用，也能用一个快捷键在 1 秒内收集 URL。
+
+1. **触发快捷键**：在键盘上按 **`Command(⌘) + Shift(⇧) + M`**。
+2. **激活输入框**：屏幕顶部出现一个简洁的 URL 输入框。
+   * *提示*：如果剪贴板中已复制了 URL，将**自动填入输入框。**
+3. **保存完成**：按 **`Enter`** 键即可完成保存并关闭窗口。
+   * 保存成功后，屏幕右下角会出现已解析元数据的提示通知（Capture-Receipt）。
+   * 若为已保存的重复 URL，则显示警告通知。
+   * 要取消并关闭，请按 **`Esc`** 键。
 
 ---
 
-## 卸载
+### 2. URL Scheme（`smartmemo://`）
+
+无需打开或切换应用，即可从外部将 URL 保存到 Smart Memo。
+可从其他应用、脚本或自动化工具调用。
+
+**支持的命令**
+
+| URL | 动作 |
+|-----|------|
+| `smartmemo://capture?url=<编码后的 URL>` | 保存 URL 后显示 Capture-Receipt 提示 |
+| `smartmemo://open` | 打开 Smart Memo 主窗口 |
+
+**在终端中直接使用**
 
 ```bash
-brew uninstall --cask smart-memo
+open "smartmemo://capture?url=https%3A%2F%2Fgithub.com%2Fuser%2Frepo"
+open "smartmemo://open"
 ```
 
-同时删除所有已保存的数据：
+**macOS 快捷指令（Shortcuts.app）联动**
+
+在 Safari、新闻等任何位置通过共享菜单一键保存：
+
+1. 快捷指令应用 → 新建快捷指令
+2. 添加"获取 URL"操作
+3. 添加"打开 URL"操作 → 在 URL 栏输入 `smartmemo://capture?url=`，再拼接 URL 变量
+4. 将快捷指令添加到共享菜单 → 即可从 Safari 的共享按钮直接保存
+
+---
+
+### 3. CLI（`sm`）
+
+在终端 · 脚本 · Alfred · 管道中保存 URL。
+
+**安装（一次性）**
 
 ```bash
-brew uninstall --cask smart-memo --zap
+# 在项目根目录或安装路径下执行
+ln -sf "$(pwd)/bin/sm" /usr/local/bin/sm
+```
+
+**用法**
+
+```bash
+sm <url>    # 保存 URL
+sm open     # 打开 Smart Memo
+```
+
+**应用示例**
+
+```bash
+# 立即保存剪贴板中的 URL
+pbpaste | xargs sm
+
+# 从文件批量保存多个 URL
+while read url; do sm "$url"; done < urls.txt
+
+# 用 curl 保存最终重定向后的 URL
+sm "$(curl -Ls -o /dev/null -w '%{url_effective}' https://bit.ly/xyz)"
 ```
 
 ---
 
-## iCloud 同步设置
+### 4. 标签
 
-1. 启动应用，点击侧边栏底部的 **⚙️**
-2. 开启 **"保存至 iCloud Drive"**
-3. 数据将移至 `~/Library/Mobile Documents/com~apple~CloudDocs/SmartMemo/data.json`
+- 在右侧详情面板输入标签后按 **Enter** → 添加
+- 点击侧边栏底部的标签列表 → 按该标签筛选
+- 点击标签旁的 `×` → 移除
+
+---
+
+### 5. 搜索
+
+在顶部搜索框中输入，即可实时跨标题、URL、域名和备忘录内容进行统一搜索。
+
+---
+
+### 6. 回收站
+
+- 删除项目 → 在回收站保留 30 天
+- 侧边栏"回收站" → 查看列表，逐个恢复或彻底删除
+- "清空回收站" → 全部永久删除
+
+---
+
+### 7. iCloud Drive 同步
+
+1. 点击应用侧边栏底部的 **⚙️**
+2. 开启 **"保存至 iCloud Drive"** 开关
+3. 数据位置：`~/Library/Mobile Documents/com~apple~CloudDocs/SmartMemo/data.json`
 4. 登录同一 Apple 账号的所有 Mac 自动同步
 
-### 与其他 Apple 账号共享
+**与其他 Apple 账号共享**
 
-1. 开启 iCloud 同步后，点击 **"在 Finder 中打开 SmartMemo 文件夹"**
-2. 右键文件夹 → **共享** → **协作邀请**
-3. 输入对方的 Apple 账号邮箱 — 对方接受邀请后，数据实时共享
+1. 开启 iCloud 同步后，点击"在 Finder 中打开 SmartMemo 文件夹"
+2. 右键文件夹 → 共享 → 协作邀请
+3. 输入对方的 Apple ID → 对方接受后实时共享
+
+---
+
+### 8. 导出 / 导入
+
+- **导出**：设置 → 导出数据 → 保存 JSON 文件（备份·迁移）
+- **导入**：设置 → 导入数据 → 选择文件
+  - **合并模式**：保留现有数据，仅添加新项目（跳过重复项）
+  - **替换模式**：用导入的文件完全替换现有数据
+
+---
+
+## 🛠️ 开发与部署
+
+### 本地开发与测试
+
+```bash
+npm install          # 安装依赖
+npm start            # 本地运行应用（开发版）
+npm test             # 运行全部测试（341 个单元/集成测试）
+npm run test:watch   # 以 Vitest watch 模式运行
+```
+
+### 打包与构建
+
+```bash
+npm run build:arm64  # 构建 Apple Silicon（M 系列）macOS DMG
+npm run build:x64    # 构建 Intel macOS DMG
+npm run build        # 构建两种架构的 DMG
+```
+
+### 🤖 自动部署（CI/CD）
+
+本仓库已通过 GitHub Actions 启用自动部署。
+1. 修改 `package.json` 中的 `"version"` 值并推送代码。
+2. 在终端中如下所示打上新的版本标签并推送到远程仓库。
+   ```bash
+   git tag v1.0.1
+   git push origin v1.0.1
+   ```
+3. GitHub Actions 会自动在 macOS 实例上构建应用，并将构建产物（`.dmg`）上传到最新的发布页面。
+
+### 项目结构
+
+```
+smart-memo/
+├── main.js              # Electron 主进程（composition root）
+├── renderer.js          # UI 入口（ES Module）
+├── preload.js           # 主窗口 IPC 桥接
+├── capturePreload.js    # 捕获窗口 IPC 桥接
+├── index.html           # 主窗口
+├── capture.html         # 捕获窗口（⌘⇧M）
+├── receipt.html         # Capture-Receipt 提示窗口
+├── src/
+│   ├── domain/          # 纯业务逻辑（无外部依赖）
+│   │   ├── url.js           # URL 规范化 · 校验 · SSRF 防御
+│   │   ├── tags.js          # 标签 CRUD
+│   │   ├── itemFilter.js    # 筛选 · 排序
+│   │   ├── itemSanitizer.js # 导入数据校验 · XSS 防御
+│   │   ├── htmlMeta.js      # og:*/meta 解析
+│   │   ├── idGenerator.js   # 唯一 ID 生成
+│   │   └── trashPolicy.js   # 回收站策略
+│   ├── application/     # 用例
+│   │   ├── captureService.js      # URL 保存 + 后台元数据获取
+│   │   ├── itemService.js         # CRUD + 回收站 + 搜索
+│   │   ├── importExportService.js # 导出/导入
+│   │   └── syncService.js         # iCloud 同步
+│   ├── infrastructure/  # 外部依赖（文件 · 网络 · iCloud）
+│   │   ├── fileStorage.js     # 原子文件写入（tmp → rename）
+│   │   ├── configStore.js     # 配置文件存储
+│   │   ├── fileWatcher.js     # 文件变更检测（防抖）
+│   │   ├── httpFetcher.js     # HTTP 请求（自动处理 redirect · gzip）
+│   │   ├── metadataFetcher.js # 元数据获取（含 YouTube oEmbed）
+│   │   └── icloudDetector.js  # iCloud Drive 路径探测
+│   └── ui/              # 浏览器渲染器（ES Module）
+│       ├── state.js
+│       ├── categories.js
+│       ├── utils.js
+│       └── views/
+│           ├── sidebar.js
+│           ├── itemList.js
+│           ├── detail.js
+│           ├── modals.js
+│           └── sync.js
+├── bin/
+│   └── sm               # CLI 脚本
+└── tests/               # 测试（18 个文件，341 个）
+    ├── unit/
+    │   ├── domain/
+    │   ├── application/
+    │   └── infrastructure/
+    └── fakes/
+        └── inMemoryStorage.js
+```
+
+### 架构
+
+Clean Architecture（Hexagonal） —— Domain → Application → Infrastructure 单向依赖。
+
+- **Domain**：纯 JS，无 fs/Electron 依赖 → 独立单元测试
+- **Application**：使用 InMemoryStorage fake 进行快速测试，无实际文件 I/O
+- **Infrastructure**：使用真实 tmpdir · 本地 HTTP 服务器进行集成测试
+- **CJS/ESM 分离**：main.js + src/ 为 CommonJS，renderer.js + src/ui/ 为 ESM（`sandbox: true` 环境）
 
 ---
 
 ## 技术栈
 
-- **[Electron](https://www.electronjs.org/)** v28 — macOS 桌面应用框架
-- **Vanilla JS** — 纯 JavaScript，无需构建工具
-- **JSON 文件存储** — 本地存储，无需外部数据库
-- **Node.js 内置模块** — `https`、`zlib`、`fs`（无外部运行时依赖）
+| 领域 | 技术 |
+|------|------|
+| 桌面框架 | Electron 28 |
+| 主进程 | Node.js（CommonJS） |
+| 渲染器 | Vanilla JS（ES Module） |
+| 存储 | JSON 文件（原子写入） |
+| 测试 | Vitest |
 
 ---
 
