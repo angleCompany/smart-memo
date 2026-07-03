@@ -47,7 +47,6 @@ src/
   infrastructure/    # 파일·HTTP·iCloud 등 외부 연동
   ui/                # 렌더러 뷰 (ESM)
 bin/sm               # CLI (`sm <url>`, `sm open`)
-raycast/             # Raycast 확장 (TypeScript)
 tests/               # Vitest 유닛/통합 테스트
 ```
 

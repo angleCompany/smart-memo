@@ -3,9 +3,9 @@
 macOS용 링크 수집 앱 — URL을 던지면 끝. 정리 없이도 나중에 찾을 수 있습니다.
 
 ![Platform](https://img.shields.io/badge/platform-macOS%2012%2B-lightgrey?logo=apple)
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Version](https://img.shields.io/badge/version-1.1.1-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Tests](https://img.shields.io/badge/tests-311%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-341%20passing-brightgreen)
 
 ---
 
@@ -22,7 +22,6 @@ macOS용 링크 수집 앱 — URL을 던지면 끝. 정리 없이도 나중에 
 | ⌘⇧M 글로벌 단축키 | 어느 앱에서든 즉시 URL 입력 창 호출 |
 | URL Scheme | `smartmemo://capture?url=...` 앱 실행 없이 저장 |
 | CLI | `sm <url>` 터미널에서 저장 |
-| Raycast 확장 | 클립보드 URL 즉시 저장 · URL 입력 폼 |
 | Capture-Receipt 토스트 | 저장 후 앱 전환 없이 우하단에 1.8초 알림 |
 | URL 메타데이터 자동 수집 | 제목·설명·썸네일·카테고리 자동 파싱 |
 | YouTube 특별 지원 | oEmbed로 영상 제목·채널·썸네일 정확 수집 |
@@ -158,27 +157,7 @@ sm "$(curl -Ls -o /dev/null -w '%{url_effective}' https://bit.ly/xyz)"
 
 ---
 
-### 4. Raycast 확장
-
-**설치**
-
-1. Raycast → 설정(⌘,) → Extensions 탭
-2. `+` 버튼 → **Add Script Directory**
-3. 이 저장소의 `raycast/` 폴더 선택
-
-**명령어**
-
-| 명령어 | 동작 | 추천 단축키 |
-|--------|------|------------|
-| **클립보드 URL 저장** | 클립보드의 URL을 즉시 저장, HUD 알림 표시 | ⌥⌘S |
-| **URL 저장** | URL 입력 폼 표시 (클립보드 URL 자동 채움) | — |
-| **Smart Memo 열기** | 메인 창 열기 | — |
-
-"클립보드 URL 저장"에 단축키를 지정하면 Raycast를 열지 않고도 바로 저장됩니다.
-
----
-
-### 5. 태그
+### 4. 태그
 
 - 우측 상세 패널에서 태그 입력 후 **Enter** → 추가
 - 사이드바 하단 태그 목록 클릭 → 해당 태그 필터링
@@ -186,13 +165,13 @@ sm "$(curl -Ls -o /dev/null -w '%{url_effective}' https://bit.ly/xyz)"
 
 ---
 
-### 6. 검색
+### 5. 검색
 
 상단 검색창에 입력하면 제목·URL·도메인·메모 내용을 실시간으로 통합 검색합니다.
 
 ---
 
-### 7. 휴지통
+### 6. 휴지통
 
 - 항목 삭제 → 30일간 휴지통 보관
 - 사이드바 "휴지통" → 목록 확인, 개별 복원 또는 완전 삭제
@@ -200,7 +179,7 @@ sm "$(curl -Ls -o /dev/null -w '%{url_effective}' https://bit.ly/xyz)"
 
 ---
 
-### 8. iCloud Drive 동기화
+### 7. iCloud Drive 동기화
 
 1. 앱 사이드바 하단 **⚙️** 클릭
 2. **"iCloud Drive에 저장"** 토글 활성화
@@ -215,7 +194,7 @@ sm "$(curl -Ls -o /dev/null -w '%{url_effective}' https://bit.ly/xyz)"
 
 ---
 
-### 9. 내보내기 / 가져오기
+### 8. 내보내기 / 가져오기
 
 - **내보내기**: 설정 → 데이터 내보내기 → JSON 파일 저장 (백업·이전)
 - **가져오기**: 설정 → 데이터 가져오기 → 파일 선택
@@ -231,7 +210,7 @@ sm "$(curl -Ls -o /dev/null -w '%{url_effective}' https://bit.ly/xyz)"
 ```bash
 npm install          # 의존성 설치
 npm start            # 앱 로컬 실행 (개발 버전)
-npm test             # 전체 테스트 실행 (311개 유닛/통합 테스트)
+npm test             # 전체 테스트 실행 (341개 유닛/통합 테스트)
 npm run test:watch   # Vitest watch 모드 실행
 ```
 
@@ -296,15 +275,9 @@ smart-memo/
 │           ├── detail.js
 │           ├── modals.js
 │           └── sync.js
-├── raycast/             # Raycast 확장
-│   └── src/
-│       ├── capture-clipboard.tsx  # 클립보드 URL 즉시 저장
-│       ├── capture-url.tsx        # URL 입력 폼
-│       ├── open.tsx               # 앱 열기
-│       └── utils.ts               # 공통 유틸
 ├── bin/
 │   └── sm               # CLI 스크립트
-└── tests/               # 테스트 (17파일, 311개)
+└── tests/               # 테스트 (18파일, 341개)
     ├── unit/
     │   ├── domain/
     │   ├── application/
@@ -333,7 +306,6 @@ Clean Architecture (Hexagonal) — Domain → Application → Infrastructure 단
 | 렌더러 | Vanilla JS (ES Module) |
 | 스토리지 | JSON 파일 (원자적 쓰기) |
 | 테스트 | Vitest |
-| Raycast 확장 | TypeScript + @raycast/api |
 
 ---
 
