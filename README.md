@@ -3,9 +3,9 @@
 macOS용 링크 수집 앱 — URL을 던지면 끝. 정리 없이도 나중에 찾을 수 있습니다.
 
 ![Platform](https://img.shields.io/badge/platform-macOS%2012%2B-lightgrey?logo=apple)
-![Version](https://img.shields.io/badge/version-1.3.0-blue)
+![Version](https://img.shields.io/badge/version-1.4.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Tests](https://img.shields.io/badge/tests-356%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-389%20passing-brightgreen)
 
 **한국어 · [English](README.en.md) · [中文](README.zh.md) · [日本語](README.ja.md)**
 
@@ -35,6 +35,7 @@ macOS용 링크 수집 앱 — URL을 던지면 끝. 정리 없이도 나중에 
 | 휴지통 | 소프트 삭제(30일 보관), 복원 · 완전 삭제 |
 | iCloud 동기화 | 같은 Apple 계정 모든 Mac 자동 동기화 |
 | 내보내기/가져오기 | JSON 백업 및 마이그레이션 |
+| 자동 업데이트 | 실행 시 새 버전 확인, 알림 + 원클릭 다운로드 |
 
 ---
 
@@ -224,6 +225,15 @@ sm "$(curl -Ls -o /dev/null -w '%{url_effective}' https://bit.ly/xyz)"
 
 ---
 
+### 10. 자동 업데이트
+
+- 앱 실행 시 GitHub 최신 릴리즈를 자동 확인 → 새 버전이 있으면 하단에 알림 배너 표시
+- 설정 → **🔄 업데이트**에서 현재 버전 확인 및 **"업데이트 확인"** 수동 실행
+- **다운로드** 클릭 → 내 Mac(arm64/x64)에 맞는 `.dmg`를 받음
+- 미서명 오픈소스 앱이므로 받은 `.dmg`를 열어 앱을 옮긴 뒤 최초 실행은 **우클릭 → 열기**로 진행
+
+---
+
 ## 🛠️ 개발 및 배포
 
 ### 로컬 개발 및 테스트
@@ -231,7 +241,7 @@ sm "$(curl -Ls -o /dev/null -w '%{url_effective}' https://bit.ly/xyz)"
 ```bash
 npm install          # 의존성 설치
 npm start            # 앱 로컬 실행 (개발 버전)
-npm test             # 전체 테스트 실행 (356개 유닛/통합 테스트)
+npm test             # 전체 테스트 실행 (389개 유닛/통합 테스트)
 npm run test:watch   # Vitest watch 모드 실행
 ```
 
@@ -273,19 +283,22 @@ smart-memo/
 │   │   ├── itemSanitizer.js # 임포트 데이터 검증·XSS 방어
 │   │   ├── htmlMeta.js      # og:*/meta 파싱
 │   │   ├── idGenerator.js   # 고유 ID 생성
-│   │   └── trashPolicy.js   # 휴지통 정책
+│   │   ├── trashPolicy.js   # 휴지통 정책
+│   │   └── version.js       # 버전 비교·DMG 자산 선택
 │   ├── application/     # 유스케이스
 │   │   ├── captureService.js      # URL 저장 + 백그라운드 메타데이터 수집
 │   │   ├── itemService.js         # CRUD + 할 일 + 휴지통 + 검색
 │   │   ├── importExportService.js # 내보내기/가져오기
-│   │   └── syncService.js         # iCloud 동기화
+│   │   ├── syncService.js         # iCloud 동기화
+│   │   └── updateService.js       # 업데이트 확인 (버전 비교)
 │   ├── infrastructure/  # 외부 의존 (파일·네트워크·iCloud)
 │   │   ├── fileStorage.js     # 원자적 파일 쓰기 (tmp → rename)
 │   │   ├── configStore.js     # 설정 파일 저장
 │   │   ├── fileWatcher.js     # 파일 변경 감지 (디바운스)
 │   │   ├── httpFetcher.js     # HTTP 요청 (redirect·gzip 자동 처리)
 │   │   ├── metadataFetcher.js # 메타데이터 수집 (YouTube oEmbed 포함)
-│   │   └── icloudDetector.js  # iCloud Drive 경로 탐지
+│   │   ├── icloudDetector.js  # iCloud Drive 경로 탐지
+│   │   └── updateChecker.js    # GitHub 릴리즈 조회
 │   └── ui/              # 브라우저 렌더러 (ES Module)
 │       ├── state.js
 │       ├── categories.js
@@ -298,7 +311,7 @@ smart-memo/
 │           └── sync.js
 ├── bin/
 │   └── sm               # CLI 스크립트
-└── tests/               # 테스트 (18파일, 356개)
+└── tests/               # 테스트 (21파일, 389개)
     ├── unit/
     │   ├── domain/
     │   ├── application/

@@ -3,9 +3,9 @@
 A link-collecting app for macOS — just throw a URL at it. Save without organizing, find it later by search.
 
 ![Platform](https://img.shields.io/badge/platform-macOS%2012%2B-lightgrey?logo=apple)
-![Version](https://img.shields.io/badge/version-1.3.0-blue)
+![Version](https://img.shields.io/badge/version-1.4.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Tests](https://img.shields.io/badge/tests-356%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-389%20passing-brightgreen)
 
 **[한국어](README.md) · English · [中文](README.zh.md) · [日本語](README.ja.md)**
 
@@ -35,6 +35,7 @@ A link-collecting app for macOS — just throw a URL at it. Save without organiz
 | Trash | Soft delete (kept 30 days), restore · permanent delete |
 | iCloud Sync | Auto-syncs across all Macs on the same Apple account |
 | Export / Import | JSON backup and migration |
+| Automatic Updates | Checks for a new version on launch — notify + one-click download |
 
 ---
 
@@ -224,6 +225,15 @@ Type in the search box at the top to search across title, URL, domain, memo, and
 
 ---
 
+### 10. Automatic Updates
+
+- On launch, the app checks GitHub for the latest release → shows a banner when a new version is available
+- Settings → **🔄 Updates** shows the current version and a manual **"Check for Updates"** button
+- Click **Download** → gets the `.dmg` matching your Mac (arm64/x64)
+- As an unsigned open-source app, open the `.dmg`, move the app, then launch it the first time via **right-click → Open**
+
+---
+
 ## 🛠️ Development & Deployment
 
 ### Local Development & Testing
@@ -231,7 +241,7 @@ Type in the search box at the top to search across title, URL, domain, memo, and
 ```bash
 npm install          # Install dependencies
 npm start            # Run the app locally (dev build)
-npm test             # Run the full test suite (356 unit/integration tests)
+npm test             # Run the full test suite (389 unit/integration tests)
 npm run test:watch   # Run Vitest in watch mode
 ```
 
@@ -273,19 +283,22 @@ smart-memo/
 │   │   ├── itemSanitizer.js # Import data validation · XSS defense
 │   │   ├── htmlMeta.js      # og:*/meta parsing
 │   │   ├── idGenerator.js   # Unique ID generation
-│   │   └── trashPolicy.js   # Trash policy
+│   │   ├── trashPolicy.js   # Trash policy
+│   │   └── version.js       # Version compare · DMG asset select
 │   ├── application/     # Use cases
 │   │   ├── captureService.js      # URL save + background metadata fetch
 │   │   ├── itemService.js         # CRUD + to-do + trash + search
 │   │   ├── importExportService.js # Export/import
-│   │   └── syncService.js         # iCloud sync
+│   │   ├── syncService.js         # iCloud sync
+│   │   └── updateService.js       # Update check (version compare)
 │   ├── infrastructure/  # External dependencies (file · network · iCloud)
 │   │   ├── fileStorage.js     # Atomic file write (tmp → rename)
 │   │   ├── configStore.js     # Config file storage
 │   │   ├── fileWatcher.js     # File-change detection (debounced)
 │   │   ├── httpFetcher.js     # HTTP requests (auto redirect · gzip handling)
 │   │   ├── metadataFetcher.js # Metadata fetch (incl. YouTube oEmbed)
-│   │   └── icloudDetector.js  # iCloud Drive path detection
+│   │   ├── icloudDetector.js  # iCloud Drive path detection
+│   │   └── updateChecker.js    # GitHub release lookup
 │   └── ui/              # Browser renderer (ES Module)
 │       ├── state.js
 │       ├── categories.js
@@ -298,7 +311,7 @@ smart-memo/
 │           └── sync.js
 ├── bin/
 │   └── sm               # CLI script
-└── tests/               # Tests (18 files, 356 tests)
+└── tests/               # Tests (21 files, 389 tests)
     ├── unit/
     │   ├── domain/
     │   ├── application/
