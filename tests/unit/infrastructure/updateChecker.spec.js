@@ -55,4 +55,17 @@ describe('fetchLatestRelease', () => {
   it('잘못된 apiBase → reject', async () => {
     await expect(fetchLatestRelease('o/r', { apiBase: 'not a url' })).rejects.toThrow();
   });
+
+  it('httpGet 전송을 주입할 수 있고 올바른 URL·헤더로 호출된다', async () => {
+    const calls = [];
+    const fakeGet = async (url, headers) => {
+      calls.push({ url, headers });
+      return { statusCode: 200, body: JSON.stringify({ tag_name: 'v9.9.9', html_url: 'h', assets: [] }) };
+    };
+    const r = await fetchLatestRelease('angleCompany/smart-memo', { apiBase: 'https://api.example.com', httpGet: fakeGet });
+    expect(r.tag_name).toBe('v9.9.9');
+    expect(calls[0].url).toBe('https://api.example.com/repos/angleCompany/smart-memo/releases/latest');
+    expect(calls[0].headers['User-Agent']).toBe('SmartMemo-Updater');
+    expect(calls[0].headers['Accept']).toBe('application/vnd.github+json');
+  });
 });

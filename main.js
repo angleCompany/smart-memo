@@ -1,6 +1,6 @@
 'use strict';
 
-const { app, BrowserWindow, ipcMain, shell, nativeTheme, dialog, globalShortcut, screen } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, nativeTheme, dialog, globalShortcut, screen, net } = require('electron');
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
@@ -52,7 +52,31 @@ function notifyUpdated(info = {}) {
 
 const itemService    = createItemService({ storage, notifyUpdated });
 const captureService = createCaptureService({ storage, metadataFetcher: fetchUrlMetadata, notifyUpdated });
-const updateService  = createUpdateService({ fetchLatestRelease: () => fetchLatestRelease('angleCompany/smart-memo') });
+// 사내 프록시(자체 서명 CA) 환경에서도 동작하도록 Chromium 네트워크 스택(시스템 CA/프록시)을 사용한다.
+// (Node의 https는 시스템 키체인을 신뢰하지 않아 프록시 환경에서 TLS 실패한다.)
+function electronHttpGet(urlString, headers, timeout = 10000) {
+  return new Promise((resolve, reject) => {
+    const request = net.request({ method: 'GET', url: urlString });
+    for (const [k, v] of Object.entries(headers || {})) request.setHeader(k, v);
+    let done = false;
+    const settle = (fn) => (arg) => { if (!done) { done = true; clearTimeout(timer); fn(arg); } };
+    const ok = settle(resolve);
+    const fail = settle(reject);
+    const timer = setTimeout(() => { try { request.abort(); } catch (_) {} fail(new Error('Timeout')); }, timeout);
+    request.on('response', (response) => {
+      let body = '';
+      response.on('data', (c) => { body += c.toString(); });
+      response.on('end', () => ok({ statusCode: response.statusCode, body }));
+      response.on('error', fail);
+    });
+    request.on('error', fail);
+    request.end();
+  });
+}
+
+const updateService  = createUpdateService({
+  fetchLatestRelease: () => fetchLatestRelease('angleCompany/smart-memo', { httpGet: electronHttpGet }),
+});
 
 const fileWatcher = createFileWatcher(
   () => currentDataPath,
@@ -207,6 +231,7 @@ ipcMain.handle('check-for-updates', async () => {
   try {
     return await updateService.check({ currentVersion: app.getVersion(), arch: process.arch });
   } catch (e) {
+    console.warn('[SmartMemo] 업데이트 확인 실패:', e.message);
     return { updateAvailable: false, error: e.message };
   }
 });
