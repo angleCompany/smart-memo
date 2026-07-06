@@ -3,9 +3,9 @@
 A link-collecting app for macOS — just throw a URL at it. Save without organizing, find it later by search.
 
 ![Platform](https://img.shields.io/badge/platform-macOS%2012%2B-lightgrey?logo=apple)
-![Version](https://img.shields.io/badge/version-1.4.0-blue)
+![Version](https://img.shields.io/badge/version-1.4.1-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Tests](https://img.shields.io/badge/tests-389%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-390%20passing-brightgreen)
 
 **[한국어](README.md) · English · [中文](README.zh.md) · [日本語](README.ja.md)**
 
@@ -241,7 +241,7 @@ Type in the search box at the top to search across title, URL, domain, memo, and
 ```bash
 npm install          # Install dependencies
 npm start            # Run the app locally (dev build)
-npm test             # Run the full test suite (389 unit/integration tests)
+npm test             # Run the full test suite (390 unit/integration tests)
 npm run test:watch   # Run Vitest in watch mode
 ```
 
@@ -311,7 +311,7 @@ smart-memo/
 │           └── sync.js
 ├── bin/
 │   └── sm               # CLI script
-└── tests/               # Tests (21 files, 389 tests)
+└── tests/               # Tests (21 files, 390 tests)
     ├── unit/
     │   ├── domain/
     │   ├── application/

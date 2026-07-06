@@ -3,9 +3,9 @@
 macOS 向けのリンク収集アプリ — URL を放り込むだけ。整理せずに保存して、あとで検索して見つけます。
 
 ![Platform](https://img.shields.io/badge/platform-macOS%2012%2B-lightgrey?logo=apple)
-![Version](https://img.shields.io/badge/version-1.4.0-blue)
+![Version](https://img.shields.io/badge/version-1.4.1-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Tests](https://img.shields.io/badge/tests-389%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-390%20passing-brightgreen)
 
 **[한국어](README.md) · [English](README.en.md) · [中文](README.zh.md) · 日本語**
 
@@ -241,7 +241,7 @@ sm "$(curl -Ls -o /dev/null -w '%{url_effective}' https://bit.ly/xyz)"
 ```bash
 npm install          # 依存関係のインストール
 npm start            # アプリをローカル実行（開発版）
-npm test             # 全テスト実行（389 個のユニット/統合テスト）
+npm test             # 全テスト実行（390 個のユニット/統合テスト）
 npm run test:watch   # Vitest watch モードで実行
 ```
 
@@ -311,7 +311,7 @@ smart-memo/
 │           └── sync.js
 ├── bin/
 │   └── sm               # CLI スクリプト
-└── tests/               # テスト（21 ファイル、389 個）
+└── tests/               # テスト（21 ファイル、390 個）
     ├── unit/
     │   ├── domain/
     │   ├── application/

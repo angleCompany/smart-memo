@@ -3,9 +3,9 @@
 macOS용 링크 수집 앱 — URL을 던지면 끝. 정리 없이도 나중에 찾을 수 있습니다.
 
 ![Platform](https://img.shields.io/badge/platform-macOS%2012%2B-lightgrey?logo=apple)
-![Version](https://img.shields.io/badge/version-1.4.0-blue)
+![Version](https://img.shields.io/badge/version-1.4.1-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Tests](https://img.shields.io/badge/tests-389%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-390%20passing-brightgreen)
 
 **한국어 · [English](README.en.md) · [中文](README.zh.md) · [日本語](README.ja.md)**
 
@@ -241,7 +241,7 @@ sm "$(curl -Ls -o /dev/null -w '%{url_effective}' https://bit.ly/xyz)"
 ```bash
 npm install          # 의존성 설치
 npm start            # 앱 로컬 실행 (개발 버전)
-npm test             # 전체 테스트 실행 (389개 유닛/통합 테스트)
+npm test             # 전체 테스트 실행 (390개 유닛/통합 테스트)
 npm run test:watch   # Vitest watch 모드 실행
 ```
 
@@ -311,7 +311,7 @@ smart-memo/
 │           └── sync.js
 ├── bin/
 │   └── sm               # CLI 스크립트
-└── tests/               # 테스트 (21파일, 389개)
+└── tests/               # 테스트 (21파일, 390개)
     ├── unit/
     │   ├── domain/
     │   ├── application/

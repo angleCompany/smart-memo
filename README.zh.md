@@ -3,9 +3,9 @@
 macOS 链接收集应用 —— 把 URL 丢进来就完事。无需整理即可保存，日后用搜索找回。
 
 ![Platform](https://img.shields.io/badge/platform-macOS%2012%2B-lightgrey?logo=apple)
-![Version](https://img.shields.io/badge/version-1.4.0-blue)
+![Version](https://img.shields.io/badge/version-1.4.1-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Tests](https://img.shields.io/badge/tests-389%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-390%20passing-brightgreen)
 
 **[한국어](README.md) · [English](README.en.md) · 中文 · [日本語](README.ja.md)**
 
@@ -241,7 +241,7 @@ sm "$(curl -Ls -o /dev/null -w '%{url_effective}' https://bit.ly/xyz)"
 ```bash
 npm install          # 安装依赖
 npm start            # 本地运行应用（开发版）
-npm test             # 运行全部测试（389 个单元/集成测试）
+npm test             # 运行全部测试（390 个单元/集成测试）
 npm run test:watch   # 以 Vitest watch 模式运行
 ```
 
@@ -311,7 +311,7 @@ smart-memo/
 │           └── sync.js
 ├── bin/
 │   └── sm               # CLI 脚本
-└── tests/               # 测试（21 个文件，389 个）
+└── tests/               # 测试（21 个文件，390 个）
     ├── unit/
     │   ├── domain/
     │   ├── application/
