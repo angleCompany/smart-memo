@@ -42,6 +42,18 @@ function createItemService({ storage, notifyUpdated }) {
     return data.items.find(i => i.id === item.id) || data.items[0];
   }
 
+  function toggleDone(id) {
+    const data = storage.load();
+    const item = data.items.find(i => i.id === id);
+    if (!item || item.type !== 'todo') return null;
+    const now = new Date().toISOString();
+    item.done = !item.done;
+    item.completedAt = item.done ? now : null;
+    item.updatedAt = now;
+    storage.save(data);
+    return item;
+  }
+
   function softDelete(id) {
     const data = storage.load();
     const item = data.items.find(i => i.id === id);
@@ -87,7 +99,7 @@ function createItemService({ storage, notifyUpdated }) {
     return data.items.some(i => !i.deletedAt && i.type === 'url' && i.content === url);
   }
 
-  return { list, counts, save, softDelete, restore, emptyTrash, permDelete, purgeTrash, isDuplicateUrl, getAll };
+  return { list, counts, save, toggleDone, softDelete, restore, emptyTrash, permDelete, purgeTrash, isDuplicateUrl, getAll };
 }
 
 module.exports = { createItemService };

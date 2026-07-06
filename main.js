@@ -175,6 +175,7 @@ ipcMain.handle('get-items',  (_, filters = {}) => itemService.list(filters));
 ipcMain.handle('get-counts', ()                => itemService.counts());
 
 ipcMain.handle('save-item', (_, item) => itemService.save(item));
+ipcMain.handle('toggle-todo', (_, id) => itemService.toggleDone(id));
 
 ipcMain.handle('delete-item',      (_, id) => itemService.softDelete(id));
 ipcMain.handle('restore-item',     (_, id) => itemService.restore(id));

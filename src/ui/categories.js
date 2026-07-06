@@ -9,6 +9,7 @@ export const CATEGORIES = [
   { id: 'Docs',     icon: '📚', label: '문서' },
   { id: 'General',  icon: '🌐', label: '일반' },
   { id: 'Memo',     icon: '✏️', label: '메모' },
+  { id: 'Todo',     icon: '✅', label: '할 일' },
   { id: 'Trash',    icon: '🗑️', label: '휴지통' },
 ];
 

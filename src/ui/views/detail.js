@@ -55,7 +55,7 @@ function bindTagInput(item, onSaveItem, onSidebarRefresh) {
 }
 
 export function renderDetail(emptyEl, contentEl, state, actions) {
-  const { onDelete, onRestore, onPermDelete, onOpenMemo, onSaveItem, onSidebarRefresh } = actions;
+  const { onDelete, onRestore, onPermDelete, onOpenMemo, onSaveItem, onSidebarRefresh, onToggleTodo } = actions;
 
   if (!state.selectedItem) {
     emptyEl.style.display = '';
@@ -67,6 +67,7 @@ export function renderDetail(emptyEl, contentEl, state, actions) {
 
   const item = state.selectedItem;
   const isMemo = item.type === 'memo';
+  const isTodo = item.type === 'todo';
 
   if (item.deletedAt) {
     contentEl.innerHTML = `
@@ -85,7 +86,21 @@ export function renderDetail(emptyEl, contentEl, state, actions) {
     return;
   }
 
-  if (isMemo) {
+  if (isTodo) {
+    contentEl.innerHTML = `
+      <div class="detail-meta">
+        <span class="badge badge-Todo">✅ 할 일</span>
+        <span class="detail-date">${formatDate(item.createdAt)}</span>
+        ${item.done ? `<span class="detail-date">${formatDate(item.completedAt || item.updatedAt)} 완료</span>` : ''}
+      </div>
+      <div class="detail-todo-text ${item.done ? 'todo-done' : ''}">${escHtml(item.content || '')}</div>
+      ${tagsHtml(item)}
+      <div class="detail-actions">
+        <button class="btn-primary" id="detailToggleBtn">${item.done ? '↩ 미완료로 되돌리기' : '✓ 완료 처리'}</button>
+        <button class="btn-danger" id="detailDeleteBtn">휴지통으로</button>
+      </div>`;
+    document.getElementById('detailToggleBtn')?.addEventListener('click', () => onToggleTodo(item.id));
+  } else if (isMemo) {
     contentEl.innerHTML = `
       <div class="detail-meta">
         <span class="badge badge-Memo">✏️ 메모</span>

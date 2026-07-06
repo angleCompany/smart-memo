@@ -2,7 +2,7 @@ import { escHtml, formatDate } from '../utils.js';
 import { getCatLabel, getCatIcon } from '../categories.js';
 import { memoPreview } from '../markdown.js';
 
-export function renderItemList(el, state, { onSelectItem, onEmptyTrash }) {
+export function renderItemList(el, state, { onSelectItem, onEmptyTrash, onToggleTodo }) {
   if (state.selectedCategory === 'Trash' && state.items.length === 0) {
     el.innerHTML = `
       <div class="list-empty">
@@ -16,9 +16,9 @@ export function renderItemList(el, state, { onSelectItem, onEmptyTrash }) {
   if (state.items.length === 0) {
     el.innerHTML = `
       <div class="list-empty">
-        <div class="list-empty-icon">${state.selectedCategory === 'Memo' ? '✏️' : '📌'}</div>
+        <div class="list-empty-icon">${state.selectedCategory === 'Memo' ? '✏️' : state.selectedCategory === 'Todo' ? '✅' : '📌'}</div>
         <h3>아직 항목이 없어요</h3>
-        <p>${state.searchQuery ? '검색 결과가 없습니다' : 'URL을 붙여넣거나 새 메모를 작성해보세요'}</p>
+        <p>${state.searchQuery ? '검색 결과가 없습니다' : state.selectedCategory === 'Todo' ? '위 입력창에 할 일을 적어보세요' : 'URL을 붙여넣거나 새 메모를 작성해보세요'}</p>
       </div>`;
     return;
   }
@@ -26,6 +26,25 @@ export function renderItemList(el, state, { onSelectItem, onEmptyTrash }) {
   let listHtml = state.items.map(item => {
     const isSelected = state.selectedItem?.id === item.id;
     const isMemo = item.type === 'memo';
+
+    if (item.type === 'todo') {
+      const text = (item.content || '').split('\n')[0].slice(0, 200) || '(빈 할 일)';
+      const date = `<span class="card-date">${formatDate(item.done ? (item.completedAt || item.updatedAt) : item.createdAt)}</span>`;
+      const tagChips = (item.tags || []).slice(0, 4).map(t => `<span class="tag-chip-sm">#${escHtml(t)}</span>`).join('');
+      // 휴지통 항목은 토글 불가 — 정적 체크박스로 표시하고 클릭은 상세(복원/영구삭제)로.
+      const check = item.deletedAt
+        ? `<span class="todo-check todo-check-static ${item.done ? 'checked' : ''}">${item.done ? '✓' : ''}</span>`
+        : `<button class="todo-check ${item.done ? 'checked' : ''}" data-todo-id="${item.id}" aria-label="완료 토글">${item.done ? '✓' : ''}</button>`;
+      return `
+        <div class="item-card todo-card ${item.done ? 'todo-done' : ''} ${isSelected ? 'selected' : ''}" data-id="${item.id}">
+          ${check}
+          <div class="card-body">
+            <div class="card-title todo-text">${escHtml(text)}</div>
+            <div class="card-meta">${date}</div>
+            ${tagChips ? `<div class="card-tags">${tagChips}</div>` : ''}
+          </div>
+        </div>`;
+    }
 
     let thumbHtml = '';
     if (!isMemo) {
@@ -77,6 +96,13 @@ export function renderItemList(el, state, { onSelectItem, onEmptyTrash }) {
 
   el.querySelectorAll('.item-card').forEach(card => {
     card.addEventListener('click', () => onSelectItem(card.dataset.id));
+  });
+
+  el.querySelectorAll('.todo-check[data-todo-id]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();  // 체크박스 클릭은 상세 패널을 열지 않는다
+      onToggleTodo?.(btn.dataset.todoId);
+    });
   });
 
   el.querySelectorAll('img[data-fallback-icon]').forEach(img => {

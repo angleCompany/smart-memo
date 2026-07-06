@@ -157,3 +157,54 @@ describe('computeCounts', () => {
     expect(counts.undefined).toBeUndefined();
   });
 });
+
+/* ===== 할 일(Todo) ===== */
+const t = (id, overrides = {}) => base({
+  id, type: 'todo', content: `할 일 ${id}`, done: false, completedAt: null, ...overrides,
+});
+
+describe('filterItems - Todo', () => {
+  const todoItems = [
+    base({ id: 'u1', category: 'Video' }),
+    t('a', { createdAt: '2026-01-01T00:00:00Z' }),
+    t('b', { createdAt: '2026-01-03T00:00:00Z' }),
+    t('c', { done: true, completedAt: '2026-01-05T00:00:00Z' }),
+  ];
+
+  it('Todo 카테고리: 할 일만 반환', () => {
+    const result = filterItems(todoItems, { category: 'Todo' });
+    expect(result.every(i => i.type === 'todo')).toBe(true);
+    expect(result).toHaveLength(3);
+  });
+
+  it('미완료가 위로, 완료는 하단에 남는다(사라지지 않음)', () => {
+    const result = filterItems(todoItems, { category: 'Todo' });
+    expect(result.map(i => i.id)).toEqual(['b', 'a', 'c']);
+  });
+
+  it('완료 항목끼리는 완료 시각 최신순', () => {
+    const items2 = [
+      t('c1', { done: true, completedAt: '2026-01-02T00:00:00Z' }),
+      t('c2', { done: true, completedAt: '2026-01-09T00:00:00Z' }),
+    ];
+    const result = filterItems(items2, { category: 'Todo' });
+    expect(result.map(i => i.id)).toEqual(['c2', 'c1']);
+  });
+});
+
+describe('computeCounts - Todo', () => {
+  it('Todo 카운트 = 미완료 개수만', () => {
+    const counts = computeCounts([
+      t('a'),
+      t('b'),
+      t('c', { done: true, completedAt: now }),
+    ]);
+    expect(counts.Todo).toBe(2);
+  });
+
+  it('완료된 할 일도 All 에는 포함된다', () => {
+    const counts = computeCounts([t('a'), t('c', { done: true, completedAt: now })]);
+    expect(counts.All).toBe(2);
+    expect(counts.Todo).toBe(1);
+  });
+});

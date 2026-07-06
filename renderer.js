@@ -14,6 +14,10 @@ const itemListEl         = $('itemList');
 const detailEmptyEl      = $('detailEmpty');
 const detailContentEl    = $('detailContent');
 const urlInput           = $('urlInput');
+const urlInputWrap       = $('urlInputWrap');
+const todoInput          = $('todoInput');
+const todoInputWrap      = $('todoInputWrap');
+const btnNewMemo         = $('btnNewMemo');
 const memoModal          = $('memoModal');
 const memoEditor         = $('memoEditor');
 const memoModalTitle     = $('memoModalTitle');
@@ -47,11 +51,12 @@ function detailActions() {
     onOpenMemo:        item => openMemoModal(memoElements, state, item),
     onSaveItem:        saveItem,
     onSidebarRefresh:  refreshSidebar,
+    onToggleTodo:      toggleTodo,
   };
 }
 
 function listActions() {
-  return { onSelectItem: selectItem, onEmptyTrash: emptyTrash };
+  return { onSelectItem: selectItem, onEmptyTrash: emptyTrash, onToggleTodo: toggleTodo };
 }
 
 /* ===== Render ===== */
@@ -83,7 +88,17 @@ async function loadAll() {
 function selectCategory(cat) {
   state.selectedCategory = cat;
   state.selectedItem = null;
+  updateToolbarMode();
   loadAll();
+}
+
+// 할 일 카테고리에서는 URL 입력 대신 할 일 빠른 추가 입력을 보여준다.
+function updateToolbarMode() {
+  const isTodo = state.selectedCategory === 'Todo';
+  urlInputWrap.style.display = isTodo ? 'none' : '';
+  btnNewMemo.style.display   = isTodo ? 'none' : '';
+  todoInputWrap.style.display = isTodo ? '' : 'none';
+  if (isTodo) setTimeout(() => todoInput.focus(), 0);
 }
 
 function selectItem(id) {
@@ -94,6 +109,22 @@ function selectItem(id) {
 
 async function saveItem(item) {
   return window.api.saveItem(item);
+}
+
+async function addTodo() {
+  const text = todoInput.value.trim();
+  if (!text) return;
+  todoInput.value = '';
+  await window.api.saveItem({ type: 'todo', content: text, done: false, completedAt: null, tags: [] });
+  showToast('할 일이 추가되었습니다');
+  await loadAll();
+  todoInput.focus();
+}
+
+async function toggleTodo(id) {
+  const updated = await window.api.toggleTodo(id);
+  if (updated && state.selectedItem?.id === id) state.selectedItem = updated;
+  await loadAll();
 }
 
 async function deleteItem(id) {
@@ -219,6 +250,9 @@ function updateSyncChipUI(info) {
 /* ===== Event bindings ===== */
 $('btnAddUrl').addEventListener('click', addUrl);
 urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') addUrl(); });
+
+$('btnAddTodo').addEventListener('click', addTodo);
+todoInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) addTodo(); });
 
 $('btnNewMemo').addEventListener('click', () => openMemoModal(memoElements, state));
 $('btnCloseMemo').addEventListener('click', () => closeMemoModal(memoElements, state));

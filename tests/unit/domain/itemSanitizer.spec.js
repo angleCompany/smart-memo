@@ -128,9 +128,44 @@ describe('sanitizeImportedItem', () => {
   });
 });
 
+describe('sanitizeImportedItem - Todo', () => {
+  const todo = {
+    id: 'td1', type: 'todo', content: '세금계산서 발행',
+    done: true, completedAt: '2026-02-01T00:00:00Z', tags: ['업무'],
+    createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z',
+  };
+
+  it('유효한 할 일 아이템 통과', () => {
+    const result = sanitizeImportedItem(todo);
+    expect(result).not.toBeNull();
+    expect(result.type).toBe('todo');
+  });
+
+  it('완료 상태(done/completedAt) 보존 — export→import 유실 방지', () => {
+    const result = sanitizeImportedItem(todo);
+    expect(result.done).toBe(true);
+    expect(result.completedAt).toBe('2026-02-01T00:00:00Z');
+  });
+
+  it('done 미지정 → false, completedAt → null', () => {
+    const result = sanitizeImportedItem({ ...todo, done: undefined, completedAt: undefined });
+    expect(result.done).toBe(false);
+    expect(result.completedAt).toBeNull();
+  });
+
+  it('done=false 이면 completedAt 은 null 로 정규화', () => {
+    const result = sanitizeImportedItem({ ...todo, done: false, completedAt: '2026-02-01T00:00:00Z' });
+    expect(result.completedAt).toBeNull();
+  });
+
+  it('url/memo 아이템에는 done 필드가 붙지 않는다', () => {
+    expect(sanitizeImportedItem(validUrl)).not.toHaveProperty('done');
+  });
+});
+
 describe('ALLOWED constants', () => {
-  it('ALLOWED_TYPES에 url, memo 포함', () => {
-    expect([...ALLOWED_TYPES]).toEqual(expect.arrayContaining(['url', 'memo']));
+  it('ALLOWED_TYPES에 url, memo, todo 포함', () => {
+    expect([...ALLOWED_TYPES]).toEqual(expect.arrayContaining(['url', 'memo', 'todo']));
   });
   it('ALLOWED_CATEGORIES에 Video 포함', () => {
     expect(ALLOWED_CATEGORIES.has('Video')).toBe(true);

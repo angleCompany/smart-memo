@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('api', {
   getCounts:         ()        => ipcRenderer.invoke('get-counts'),
   fetchUrlMetadata:  (url)     => ipcRenderer.invoke('fetch-url-metadata', url),
   saveItem:          (item)    => ipcRenderer.invoke('save-item', item),
+  toggleTodo:        (id)      => ipcRenderer.invoke('toggle-todo', id),
   deleteItem:        (id)      => ipcRenderer.invoke('delete-item', id),
   restoreItem:       (id)      => ipcRenderer.invoke('restore-item', id),
   emptyTrash:        ()        => ipcRenderer.invoke('empty-trash'),

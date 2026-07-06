@@ -254,6 +254,45 @@ describe('itemService.counts', () => {
   });
 });
 
+/* ===== toggleDone ===== */
+describe('itemService.toggleDone', () => {
+  const todo = (overrides = {}) => baseItem({
+    id: 'td1', type: 'todo', content: '우유 사기', done: false, completedAt: null, tags: ['집안일'], ...overrides,
+  });
+
+  it('미완료 → 완료: done=true, completedAt 설정', () => {
+    const { service, storage } = makeService([todo()]);
+    const result = service.toggleDone('td1');
+    expect(result.done).toBe(true);
+    expect(result.completedAt).toBeTruthy();
+    expect(storage.peek()[0].done).toBe(true);
+  });
+
+  it('완료 → 미완료: done=false, completedAt=null', () => {
+    const { service } = makeService([todo({ done: true, completedAt: now })]);
+    const result = service.toggleDone('td1');
+    expect(result.done).toBe(false);
+    expect(result.completedAt).toBeNull();
+  });
+
+  it('토글 시 태그가 유실되지 않는다 (전용 경로)', () => {
+    const { service } = makeService([todo()]);
+    const result = service.toggleDone('td1');
+    expect(result.tags).toEqual(['집안일']);
+  });
+
+  it('존재하지 않는 id → null', () => {
+    const { service } = makeService([]);
+    expect(service.toggleDone('nope')).toBeNull();
+  });
+
+  it('todo 가 아닌 아이템 → null (변경 없음)', () => {
+    const { service, storage } = makeService([baseItem({ id: 'u1', type: 'url' })]);
+    expect(service.toggleDone('u1')).toBeNull();
+    expect(storage.peek()[0]).not.toHaveProperty('done');
+  });
+});
+
 /* ===== getAll ===== */
 describe('itemService.getAll', () => {
   it('삭제 포함 전체 항목 반환', () => {
