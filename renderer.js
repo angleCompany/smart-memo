@@ -14,13 +14,13 @@ const itemListEl         = $('itemList');
 const detailEmptyEl      = $('detailEmpty');
 const detailContentEl    = $('detailContent');
 const urlInput           = $('urlInput');
-const urlInputWrap       = $('urlInputWrap');
-const todoInput          = $('todoInput');
-const todoInputWrap      = $('todoInputWrap');
-const btnNewMemo         = $('btnNewMemo');
 const memoModal          = $('memoModal');
 const memoEditor         = $('memoEditor');
 const memoModalTitle     = $('memoModalTitle');
+const todoModal          = $('todoModal');
+const todoEditor         = $('todoEditor');
+const todoModalTitle     = $('todoModalTitle');
+const todoTagsDisplay    = $('todoTagsDisplay');
 const settingsModal      = $('settingsModal');
 const icloudToggle       = $('icloudToggle');
 const syncChip           = $('syncChip');
@@ -49,6 +49,7 @@ function detailActions() {
     onRestore:         restoreItem,
     onPermDelete:      permDeleteItem,
     onOpenMemo:        item => openMemoModal(memoElements, state, item),
+    onOpenTodo:        openTodoModal,
     onSaveItem:        saveItem,
     onSidebarRefresh:  refreshSidebar,
     onToggleTodo:      toggleTodo,
@@ -88,17 +89,7 @@ async function loadAll() {
 function selectCategory(cat) {
   state.selectedCategory = cat;
   state.selectedItem = null;
-  updateToolbarMode();
   loadAll();
-}
-
-// 할 일 카테고리에서는 URL 입력 대신 할 일 빠른 추가 입력을 보여준다.
-function updateToolbarMode() {
-  const isTodo = state.selectedCategory === 'Todo';
-  urlInputWrap.style.display = isTodo ? 'none' : '';
-  btnNewMemo.style.display   = isTodo ? 'none' : '';
-  todoInputWrap.style.display = isTodo ? '' : 'none';
-  if (isTodo) setTimeout(() => todoInput.focus(), 0);
 }
 
 function selectItem(id) {
@@ -111,14 +102,44 @@ async function saveItem(item) {
   return window.api.saveItem(item);
 }
 
-async function addTodo() {
-  const text = todoInput.value.trim();
-  if (!text) return;
-  todoInput.value = '';
-  await window.api.saveItem({ type: 'todo', content: text, done: false, completedAt: null, tags: [] });
-  showToast('할 일이 추가되었습니다');
+// 할 일 추가/편집 모달 (메모와 동일한 방식, 평문 여러 줄)
+function openTodoModal(existing = null) {
+  state.editingTodoId = existing?.id || null;
+  state.editingMemoTags = [...(existing?.tags || [])];  // 한 번에 한 모달만 열리므로 태그 상태 공유
+  todoModalTitle.textContent = existing ? '할 일 편집' : '새 할 일';
+  todoEditor.value = existing?.content || '';
+  renderMemoTagsUI(todoTagsDisplay, state);
+  todoModal.style.display = '';
+  setTimeout(() => todoEditor.focus(), 50);
+}
+
+function closeTodoModal() {
+  todoModal.style.display = 'none';
+  todoEditor.value = '';
+  state.editingTodoId = null;
+}
+
+async function saveTodo() {
+  const content = todoEditor.value.trim();
+  if (!content) { showToast('할 일 내용을 입력해주세요'); return; }
+
+  const tagInput = $('todoTagInput');
+  if (tagInput?.value.trim()) {
+    const extra = tagInput.value.trim().toLowerCase().replace(/[,#\s]+/g, '');
+    if (extra && !state.editingMemoTags.includes(extra)) state.editingMemoTags.push(extra);
+    tagInput.value = '';
+  }
+
+  const isEditing = !!state.editingTodoId;
+  // 편집 시 done/completedAt은 넘기지 않아 itemService.save의 spread가 기존 값을 보존한다.
+  const item = { type: 'todo', content, tags: [...state.editingMemoTags] };
+  if (isEditing) item.id = state.editingTodoId;
+  else { item.done = false; item.completedAt = null; }
+  const saved = await window.api.saveItem(item);
+  state.selectedItem = saved;
+  closeTodoModal();
+  showToast(isEditing ? '할 일이 수정되었습니다' : '할 일이 추가되었습니다');
   await loadAll();
-  todoInput.focus();
 }
 
 async function toggleTodo(id) {
@@ -251,10 +272,15 @@ function updateSyncChipUI(info) {
 $('btnAddUrl').addEventListener('click', addUrl);
 urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') addUrl(); });
 
-$('btnAddTodo').addEventListener('click', addTodo);
-todoInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) addTodo(); });
-
 $('btnNewMemo').addEventListener('click', () => openMemoModal(memoElements, state));
+$('btnNewTodo').addEventListener('click', () => openTodoModal());
+$('btnCloseTodo').addEventListener('click', closeTodoModal);
+$('btnCancelTodo').addEventListener('click', closeTodoModal);
+$('btnSaveTodo').addEventListener('click', saveTodo);
+todoModal.addEventListener('click', e => { if (e.target === todoModal) closeTodoModal(); });
+todoEditor.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); saveTodo(); }
+});
 $('btnCloseMemo').addEventListener('click', () => closeMemoModal(memoElements, state));
 $('btnCancelMemo').addEventListener('click', () => closeMemoModal(memoElements, state));
 $('btnSaveMemo').addEventListener('click', saveMemo);
@@ -267,14 +293,15 @@ memoEditor.addEventListener('input', () => refreshEditorPlaceholder(memoEditor))
 memoEditor.addEventListener('paste', e => handleEditorPaste(e, memoEditor));
 
 document.addEventListener('keydown', e => {
-  if (e.target?.id !== 'memoTagInput') return;
+  const id = e.target?.id;
+  if (id !== 'memoTagInput' && id !== 'todoTagInput') return;
   if (e.isComposing) return;
   if (e.key !== 'Enter' && e.key !== ',') return;
   e.preventDefault();
   const tag = e.target.value.trim().toLowerCase().replace(/[,#\s]+/g, '');
   if (tag && !state.editingMemoTags.includes(tag)) {
     state.editingMemoTags.push(tag);
-    renderMemoTagsUI(memoTagsDisplay, state);
+    renderMemoTagsUI(id === 'memoTagInput' ? memoTagsDisplay : todoTagsDisplay, state);
   }
   e.target.value = '';
 });

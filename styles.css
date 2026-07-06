@@ -161,7 +161,6 @@ html, body {
 
 /* ===== Toolbar ===== */
 .toolbar {
-  height: var(--toolbar-h);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -734,6 +733,27 @@ html, body {
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+/* 할 일 모달 에디터: 평문 여러 줄 textarea (메모 에디터와 동일한 크기감) */
+.todo-editor {
+  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
+  border: none;
+  background: transparent;
+  padding: 16px 20px;
+  font-size: 14px;
+  color: var(--text);
+  font-family: inherit;
+  outline: none;
+  line-height: 1.7;
+  min-height: 260px;
+  max-height: 48vh;
+  overflow-y: auto;
+  resize: none;
+  user-select: text;
+}
+.todo-editor::placeholder { color: var(--text3); }
 
 .memo-editor .md-block {
   position: relative;

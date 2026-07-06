@@ -37,12 +37,8 @@
           <input type="text" id="urlInput" placeholder="URL을 붙여넣으세요 (Enter로 저장)" autocomplete="off" spellcheck="false" />
           <button class="btn-add-url" id="btnAddUrl">추가</button>
         </div>
-        <div class="url-input-wrap" id="todoInputWrap" style="display:none">
-          <span class="url-icon">✅</span>
-          <input type="text" id="todoInput" placeholder="할 일을 입력하세요 (Enter로 추가)" autocomplete="off" spellcheck="false" />
-          <button class="btn-add-url" id="btnAddTodo">추가</button>
-        </div>
         <button class="btn-memo" id="btnNewMemo"><span>✏️</span> 새 메모</button>
+        <button class="btn-memo" id="btnNewTodo"><span>✅</span> 새 할 일</button>
         <div class="search-wrap">
           <span class="search-icon">🔍</span>
           <input type="text" id="searchInput" placeholder="검색..." autocomplete="off" />
@@ -83,6 +79,29 @@
       <div class="modal-footer">
         <button class="btn-cancel" id="btnCancelMemo">취소</button>
         <button class="btn-save" id="btnSaveMemo">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Todo editor modal -->
+  <div class="modal-overlay" id="todoModal" style="display:none">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="todoModalTitle">새 할 일</h2>
+        <button class="btn-close" id="btnCloseTodo">✕</button>
+      </div>
+      <textarea id="todoEditor" class="todo-editor" spellcheck="false"
+                placeholder="할 일을 입력하세요… (여러 줄 가능 · ⌘+Enter로 저장)"></textarea>
+      <div class="memo-tags-section">
+        <div class="memo-tags-label">태그</div>
+        <div class="memo-tags-row">
+          <div id="todoTagsDisplay"></div>
+          <input id="todoTagInput" class="tag-add-input" placeholder="태그 입력 후 Enter" maxlength="50" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" id="btnCancelTodo">취소</button>
+        <button class="btn-save" id="btnSaveTodo">저장</button>
       </div>
     </div>
   </div>

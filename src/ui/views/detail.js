@@ -55,7 +55,7 @@ function bindTagInput(item, onSaveItem, onSidebarRefresh) {
 }
 
 export function renderDetail(emptyEl, contentEl, state, actions) {
-  const { onDelete, onRestore, onPermDelete, onOpenMemo, onSaveItem, onSidebarRefresh, onToggleTodo } = actions;
+  const { onDelete, onRestore, onPermDelete, onOpenMemo, onOpenTodo, onSaveItem, onSidebarRefresh, onToggleTodo } = actions;
 
   if (!state.selectedItem) {
     emptyEl.style.display = '';
@@ -97,9 +97,11 @@ export function renderDetail(emptyEl, contentEl, state, actions) {
       ${tagsHtml(item)}
       <div class="detail-actions">
         <button class="btn-primary" id="detailToggleBtn">${item.done ? '↩ 미완료로 되돌리기' : '✓ 완료 처리'}</button>
+        <button class="btn-secondary" id="detailEditTodoBtn">편집</button>
         <button class="btn-danger" id="detailDeleteBtn">휴지통으로</button>
       </div>`;
     document.getElementById('detailToggleBtn')?.addEventListener('click', () => onToggleTodo(item.id));
+    document.getElementById('detailEditTodoBtn')?.addEventListener('click', () => onOpenTodo(item));
   } else if (isMemo) {
     contentEl.innerHTML = `
       <div class="detail-meta">

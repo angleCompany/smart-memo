@@ -7,5 +7,6 @@ export const state = {
   searchQuery: '',
   editingMemoId: null,
   editingMemoTags: [],
+  editingTodoId: null,
   syncInfo: null,
 };
