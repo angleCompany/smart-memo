@@ -14,6 +14,10 @@ contextBridge.exposeInMainWorld('api', {
   openUrl:           (url)     => ipcRenderer.invoke('open-url', url),
   getTheme:          ()        => ipcRenderer.invoke('get-theme'),
 
+  // Updates
+  getAppVersion:     ()        => ipcRenderer.invoke('get-app-version'),
+  checkForUpdates:   ()        => ipcRenderer.invoke('check-for-updates'),
+
   // Sync & Settings
   getSyncInfo:       ()                  => ipcRenderer.invoke('get-sync-info'),
   setUseICloud:      (useICloud)         => ipcRenderer.invoke('set-use-icloud', useICloud),

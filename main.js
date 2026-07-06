@@ -26,7 +26,9 @@ const { createFileWatcher }   = require('./src/infrastructure/fileWatcher');
 const { createItemService }   = require('./src/application/itemService');
 const { createCaptureService } = require('./src/application/captureService');
 const { createImportExportService } = require('./src/application/importExportService');
+const { createUpdateService } = require('./src/application/updateService');
 const { fetchUrlMetadata }    = require('./src/infrastructure/metadataFetcher');
+const { fetchLatestRelease }  = require('./src/infrastructure/updateChecker');
 const { getICloudBase, resolveDataPath } = require('./src/infrastructure/icloudDetector');
 const { sanitizeImportedItem } = require('./src/domain/itemSanitizer');
 
@@ -50,6 +52,7 @@ function notifyUpdated(info = {}) {
 
 const itemService    = createItemService({ storage, notifyUpdated });
 const captureService = createCaptureService({ storage, metadataFetcher: fetchUrlMetadata, notifyUpdated });
+const updateService  = createUpdateService({ fetchLatestRelease: () => fetchLatestRelease('angleCompany/smart-memo') });
 
 const fileWatcher = createFileWatcher(
   () => currentDataPath,
@@ -197,6 +200,16 @@ ipcMain.handle('open-url', (_, url) => {
 });
 
 ipcMain.handle('get-theme', () => nativeTheme.shouldUseDarkColors ? 'dark' : 'light');
+
+/* ===== IPC: Updates ===== */
+ipcMain.handle('get-app-version', () => app.getVersion());
+ipcMain.handle('check-for-updates', async () => {
+  try {
+    return await updateService.check({ currentVersion: app.getVersion(), arch: process.arch });
+  } catch (e) {
+    return { updateAvailable: false, error: e.message };
+  }
+});
 
 /* ===== IPC: Sync & Settings ===== */
 ipcMain.handle('get-sync-info', () => ({

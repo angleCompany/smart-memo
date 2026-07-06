@@ -27,6 +27,11 @@ const syncChip           = $('syncChip');
 const syncNotification   = $('syncNotification');
 const syncNotificationText = $('syncNotificationText');
 const memoTagsDisplay    = $('memoTagsDisplay');
+const updateBanner       = $('updateBanner');
+const updateBannerText   = $('updateBannerText');
+const currentVersionText = $('currentVersionText');
+const updateStatusDesc   = $('updateStatusDesc');
+const updateGatekeeperNote = $('updateGatekeeperNote');
 
 const memoElements = { modal: memoModal, title: memoModalTitle, editor: memoEditor, tagsDisplay: memoTagsDisplay };
 const settingsElements = {
@@ -268,6 +273,49 @@ function updateSyncChipUI(info) {
   updateSyncChip(syncChipElements, state, info);
 }
 
+/* ===== 자동 업데이트 (미서명 → 알림 + 원클릭 다운로드) ===== */
+let pendingUpdate = null;
+
+function showUpdateBanner(info) {
+  pendingUpdate = info;
+  updateBannerText.textContent = `새 버전 ${info.latestVersion} 사용 가능`;
+  updateBanner.style.display = '';
+}
+
+function hideUpdateBanner() { updateBanner.style.display = 'none'; }
+
+// 실행 시 조용히 확인: 새 버전이 있을 때만 배너 표시(오프라인/실패는 무시).
+async function checkUpdatesSilently() {
+  try {
+    const r = await window.api.checkForUpdates();
+    if (r?.updateAvailable) showUpdateBanner(r);
+  } catch { /* 조용히 무시 */ }
+}
+
+// 설정의 수동 확인: 결과(최신/새 버전/실패)를 표시.
+async function checkUpdatesManually() {
+  updateStatusDesc.textContent = '확인 중…';
+  updateGatekeeperNote.style.display = 'none';
+  const r = await window.api.checkForUpdates();
+  if (r.error || (!r.updateAvailable && !r.latestVersion)) {
+    updateStatusDesc.textContent = '확인 실패 — 네트워크를 확인하세요';
+    return;
+  }
+  if (r.updateAvailable) {
+    updateStatusDesc.textContent = `새 버전 ${r.latestVersion} 사용 가능`;
+    updateGatekeeperNote.style.display = '';
+    showUpdateBanner(r);
+  } else {
+    updateStatusDesc.textContent = '최신 버전을 사용 중입니다';
+  }
+}
+
+function downloadUpdate() {
+  if (!pendingUpdate?.downloadUrl) return;
+  window.api.openUrl(pendingUpdate.downloadUrl);
+  showToast('DMG 다운로드를 시작했습니다 — 열어서 앱을 우클릭 → 열기로 설치하세요');
+}
+
 /* ===== Event bindings ===== */
 $('btnAddUrl').addEventListener('click', addUrl);
 urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') addUrl(); });
@@ -315,6 +363,10 @@ $('searchInput').addEventListener('input', () => {
     loadAll();
   }, 250);
 });
+
+$('btnCheckUpdate').addEventListener('click', checkUpdatesManually);
+$('btnUpdateDownload').addEventListener('click', downloadUpdate);
+$('btnUpdateClose').addEventListener('click', hideUpdateBanner);
 
 $('btnSettings').addEventListener('click', openSettings);
 syncChip.addEventListener('click', openSettings);
@@ -376,7 +428,9 @@ window.api.onDataUpdated(info => {
 async function init() {
   const info = await window.api.getSyncInfo();
   updateSyncChipUI(info);
+  window.api.getAppVersion().then(v => { currentVersionText.textContent = 'v' + v; }).catch(() => {});
   await loadAll();
+  checkUpdatesSilently();
 }
 
 init();

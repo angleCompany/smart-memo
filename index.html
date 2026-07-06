@@ -169,6 +169,23 @@
           </div>
         </div>
 
+        <!-- Updates -->
+        <div class="settings-section">
+          <div class="settings-section-title">🔄 업데이트</div>
+          <div class="settings-card">
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <div class="settings-row-label">현재 버전 <span id="currentVersionText">—</span></div>
+                <div class="settings-row-desc" id="updateStatusDesc">GitHub 최신 릴리즈와 비교합니다</div>
+              </div>
+              <button class="btn-sm btn-secondary" id="btnCheckUpdate">업데이트 확인</button>
+            </div>
+            <div class="notice-banner notice-warn" id="updateGatekeeperNote" style="display:none">
+              ⚠️ 미서명 오픈소스 앱입니다. 다운로드한 <strong>.dmg</strong>를 열어 앱을 <strong>Applications</strong>로 옮긴 뒤, 최초 실행 시 앱을 <strong>우클릭 → 열기</strong>로 실행하세요.
+            </div>
+          </div>
+        </div>
+
         <!-- Storage path info -->
         <div class="settings-section">
           <div class="settings-section-title">💾 저장 위치</div>
@@ -185,6 +202,14 @@
   <div class="loading-overlay" id="loadingOverlay" style="display:none">
     <div class="spinner"></div>
     <p>메타데이터를 가져오는 중...</p>
+  </div>
+
+  <!-- Update banner -->
+  <div class="update-banner" id="updateBanner" style="display:none">
+    <span class="update-banner-icon">🔄</span>
+    <span class="update-banner-text" id="updateBannerText"></span>
+    <button class="btn-sm btn-primary" id="btnUpdateDownload">다운로드</button>
+    <button class="update-banner-close" id="btnUpdateClose" title="닫기">✕</button>
   </div>
 
   <!-- Sync notification -->

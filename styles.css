@@ -1116,6 +1116,36 @@ html, body {
 .sync-notification.show { transform: translateX(0); }
 .sync-notification-icon { font-size: 16px; }
 
+/* ===== 업데이트 배너 (하단 중앙, 액션 포함) ===== */
+.update-banner {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px 10px 16px;
+  box-shadow: var(--shadow-md);
+  z-index: 3000;
+  max-width: calc(100vw - 48px);
+}
+.update-banner-icon { font-size: 16px; }
+.update-banner-text { font-size: 13px; color: var(--text); font-weight: 500; }
+.update-banner-close {
+  background: transparent;
+  border: none;
+  color: var(--text3);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+.update-banner-close:hover { background: var(--border); color: var(--text); }
+
 /* ===== Tags ===== */
 .cat-section-label {
   padding: 4px 14px 2px;
