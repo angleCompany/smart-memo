@@ -3,9 +3,9 @@
 A link-collecting app for macOS — just throw a URL at it. Save without organizing, find it later by search.
 
 ![Platform](https://img.shields.io/badge/platform-macOS%2012%2B-lightgrey?logo=apple)
-![Version](https://img.shields.io/badge/version-1.1.1-blue)
+![Version](https://img.shields.io/badge/version-1.2.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Tests](https://img.shields.io/badge/tests-341%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-356%20passing-brightgreen)
 
 **[한국어](README.md) · English · [中文](README.zh.md) · [日本語](README.ja.md)**
 
@@ -29,7 +29,9 @@ A link-collecting app for macOS — just throw a URL at it. Save without organiz
 | Dedicated YouTube Support | Accurately fetches video title, channel, and thumbnail via oEmbed |
 | Tag System | Add free-form tags, filter by tags in the sidebar |
 | Automatic Categorization | Domain-based classification: Video · Code · Article · Social, etc. |
-| Full-Text Search | Unified search across title, URL, domain, and memo |
+| Memo | Write memos without a URL using the inline Markdown editor |
+| To-Do | Jot down tasks fast, check them off; completed items move to the bottom |
+| Full-Text Search | Unified search across title, URL, domain, memo, and to-do |
 | Trash | Soft delete (kept 30 days), restore · permanent delete |
 | iCloud Sync | Auto-syncs across all Macs on the same Apple account |
 | Export / Import | JSON backup and migration |
@@ -159,7 +161,23 @@ sm "$(curl -Ls -o /dev/null -w '%{url_effective}' https://bit.ly/xyz)"
 
 ---
 
-### 4. Tags
+### 4. Memo & To-Do
+
+**Memo** — save free-form notes instead of a URL.
+
+- Click **✏️ New Memo** in the toolbar → inline Markdown editor (`#` heading · `-` list · `>` quote, converted on Enter)
+- Save with **⌘ + Enter**; tags can be added too
+
+**To-Do** — jot down tasks on the fly and check them off.
+
+1. Select **✅ To-Do** in the sidebar → type a task in the top input and press **Enter** to add
+2. Click the **checkbox** in the list → toggle done (completed items move to the bottom with a strikethrough — they don't disappear)
+3. The **To-Do** badge in the sidebar shows the **number of open tasks**
+4. To-dos are also included in search, tags, trash, iCloud sync, and export
+
+---
+
+### 5. Tags
 
 - Enter a tag in the detail panel on the right, then press **Enter** → add
 - Click a tag in the sidebar's tag list → filter by that tag
@@ -167,13 +185,13 @@ sm "$(curl -Ls -o /dev/null -w '%{url_effective}' https://bit.ly/xyz)"
 
 ---
 
-### 5. Search
+### 6. Search
 
-Type in the search box at the top to search across title, URL, domain, and memo content in real time.
+Type in the search box at the top to search across title, URL, domain, memo, and to-do content in real time.
 
 ---
 
-### 6. Trash
+### 7. Trash
 
 - Delete an item → kept in Trash for 30 days
 - Sidebar "Trash" → review the list, restore individually or delete permanently
@@ -181,7 +199,7 @@ Type in the search box at the top to search across title, URL, domain, and memo 
 
 ---
 
-### 7. iCloud Drive Sync
+### 8. iCloud Drive Sync
 
 1. Click **⚙️** at the bottom of the app sidebar
 2. Enable the **"Save to iCloud Drive"** toggle
@@ -196,7 +214,7 @@ Type in the search box at the top to search across title, URL, domain, and memo 
 
 ---
 
-### 8. Export / Import
+### 9. Export / Import
 
 - **Export**: Settings → Export Data → save a JSON file (backup/migration)
 - **Import**: Settings → Import Data → select a file
@@ -212,7 +230,7 @@ Type in the search box at the top to search across title, URL, domain, and memo 
 ```bash
 npm install          # Install dependencies
 npm start            # Run the app locally (dev build)
-npm test             # Run the full test suite (341 unit/integration tests)
+npm test             # Run the full test suite (356 unit/integration tests)
 npm run test:watch   # Run Vitest in watch mode
 ```
 
@@ -257,7 +275,7 @@ smart-memo/
 │   │   └── trashPolicy.js   # Trash policy
 │   ├── application/     # Use cases
 │   │   ├── captureService.js      # URL save + background metadata fetch
-│   │   ├── itemService.js         # CRUD + trash + search
+│   │   ├── itemService.js         # CRUD + to-do + trash + search
 │   │   ├── importExportService.js # Export/import
 │   │   └── syncService.js         # iCloud sync
 │   ├── infrastructure/  # External dependencies (file · network · iCloud)
@@ -279,7 +297,7 @@ smart-memo/
 │           └── sync.js
 ├── bin/
 │   └── sm               # CLI script
-└── tests/               # Tests (18 files, 341 tests)
+└── tests/               # Tests (18 files, 356 tests)
     ├── unit/
     │   ├── domain/
     │   ├── application/

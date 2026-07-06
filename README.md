@@ -3,9 +3,9 @@
 macOS용 링크 수집 앱 — URL을 던지면 끝. 정리 없이도 나중에 찾을 수 있습니다.
 
 ![Platform](https://img.shields.io/badge/platform-macOS%2012%2B-lightgrey?logo=apple)
-![Version](https://img.shields.io/badge/version-1.1.1-blue)
+![Version](https://img.shields.io/badge/version-1.2.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Tests](https://img.shields.io/badge/tests-341%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-356%20passing-brightgreen)
 
 **한국어 · [English](README.en.md) · [中文](README.zh.md) · [日本語](README.ja.md)**
 
@@ -29,7 +29,9 @@ macOS용 링크 수집 앱 — URL을 던지면 끝. 정리 없이도 나중에 
 | YouTube 특별 지원 | oEmbed로 영상 제목·채널·썸네일 정확 수집 |
 | 태그 시스템 | 자유 태그 추가, 사이드바 태그 필터 |
 | 자동 카테고리 분류 | Video · Code · Article · Social 등 도메인 기반 분류 |
-| 전체 검색 | 제목·URL·도메인·메모 통합 검색 |
+| 메모 | 마크다운 인라인 에디터로 URL 없이 메모 작성 |
+| 할 일 | 빠르게 적고 체크박스로 완료 체크, 완료 항목 하단 보관 |
+| 전체 검색 | 제목·URL·도메인·메모·할 일 통합 검색 |
 | 휴지통 | 소프트 삭제(30일 보관), 복원 · 완전 삭제 |
 | iCloud 동기화 | 같은 Apple 계정 모든 Mac 자동 동기화 |
 | 내보내기/가져오기 | JSON 백업 및 마이그레이션 |
@@ -159,7 +161,23 @@ sm "$(curl -Ls -o /dev/null -w '%{url_effective}' https://bit.ly/xyz)"
 
 ---
 
-### 4. 태그
+### 4. 메모 & 할 일
+
+**메모** — URL이 아닌 자유 메모를 저장합니다.
+
+- 툴바 **✏️ 새 메모** 클릭 → 마크다운 인라인 에디터 (`#` 제목 · `-` 목록 · `>` 인용, Enter로 변환)
+- **⌘ + Enter**로 저장, 태그도 함께 지정 가능
+
+**할 일** — 그때그때 할 일을 적고 완료를 체크합니다.
+
+1. 사이드바 **✅ 할 일** 선택 → 상단 입력창에 할 일 입력 후 **Enter**로 추가
+2. 목록의 **체크박스** 클릭 → 완료 토글 (완료 항목은 취소선과 함께 하단으로 이동, 사라지지 않음)
+3. 사이드바 **할 일** 배지는 **미완료 개수**를 표시
+4. 할 일도 검색·태그·휴지통·iCloud 동기화·내보내기에 그대로 포함됩니다
+
+---
+
+### 5. 태그
 
 - 우측 상세 패널에서 태그 입력 후 **Enter** → 추가
 - 사이드바 하단 태그 목록 클릭 → 해당 태그 필터링
@@ -167,13 +185,13 @@ sm "$(curl -Ls -o /dev/null -w '%{url_effective}' https://bit.ly/xyz)"
 
 ---
 
-### 5. 검색
+### 6. 검색
 
-상단 검색창에 입력하면 제목·URL·도메인·메모 내용을 실시간으로 통합 검색합니다.
+상단 검색창에 입력하면 제목·URL·도메인·메모·할 일 내용을 실시간으로 통합 검색합니다.
 
 ---
 
-### 6. 휴지통
+### 7. 휴지통
 
 - 항목 삭제 → 30일간 휴지통 보관
 - 사이드바 "휴지통" → 목록 확인, 개별 복원 또는 완전 삭제
@@ -181,7 +199,7 @@ sm "$(curl -Ls -o /dev/null -w '%{url_effective}' https://bit.ly/xyz)"
 
 ---
 
-### 7. iCloud Drive 동기화
+### 8. iCloud Drive 동기화
 
 1. 앱 사이드바 하단 **⚙️** 클릭
 2. **"iCloud Drive에 저장"** 토글 활성화
@@ -196,7 +214,7 @@ sm "$(curl -Ls -o /dev/null -w '%{url_effective}' https://bit.ly/xyz)"
 
 ---
 
-### 8. 내보내기 / 가져오기
+### 9. 내보내기 / 가져오기
 
 - **내보내기**: 설정 → 데이터 내보내기 → JSON 파일 저장 (백업·이전)
 - **가져오기**: 설정 → 데이터 가져오기 → 파일 선택
@@ -212,7 +230,7 @@ sm "$(curl -Ls -o /dev/null -w '%{url_effective}' https://bit.ly/xyz)"
 ```bash
 npm install          # 의존성 설치
 npm start            # 앱 로컬 실행 (개발 버전)
-npm test             # 전체 테스트 실행 (341개 유닛/통합 테스트)
+npm test             # 전체 테스트 실행 (356개 유닛/통합 테스트)
 npm run test:watch   # Vitest watch 모드 실행
 ```
 
@@ -257,7 +275,7 @@ smart-memo/
 │   │   └── trashPolicy.js   # 휴지통 정책
 │   ├── application/     # 유스케이스
 │   │   ├── captureService.js      # URL 저장 + 백그라운드 메타데이터 수집
-│   │   ├── itemService.js         # CRUD + 휴지통 + 검색
+│   │   ├── itemService.js         # CRUD + 할 일 + 휴지통 + 검색
 │   │   ├── importExportService.js # 내보내기/가져오기
 │   │   └── syncService.js         # iCloud 동기화
 │   ├── infrastructure/  # 외부 의존 (파일·네트워크·iCloud)
@@ -279,7 +297,7 @@ smart-memo/
 │           └── sync.js
 ├── bin/
 │   └── sm               # CLI 스크립트
-└── tests/               # 테스트 (18파일, 341개)
+└── tests/               # 테스트 (18파일, 356개)
     ├── unit/
     │   ├── domain/
     │   ├── application/
