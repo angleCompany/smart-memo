@@ -3,7 +3,7 @@
 A link-collecting app for macOS — just throw a URL at it. Save without organizing, find it later by search.
 
 ![Platform](https://img.shields.io/badge/platform-macOS%2012%2B-lightgrey?logo=apple)
-![Version](https://img.shields.io/badge/version-1.2.0-blue)
+![Version](https://img.shields.io/badge/version-1.3.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Tests](https://img.shields.io/badge/tests-356%20passing-brightgreen)
 
@@ -170,10 +170,11 @@ sm "$(curl -Ls -o /dev/null -w '%{url_effective}' https://bit.ly/xyz)"
 
 **To-Do** — jot down tasks on the fly and check them off.
 
-1. Select **✅ To-Do** in the sidebar → type a task in the top input and press **Enter** to add
+1. Click **✅ New To-Do** in the toolbar → enter **multiple lines** in the modal and save with **⌘+Enter**
 2. Click the **checkbox** in the list → toggle done (completed items move to the bottom with a strikethrough — they don't disappear)
-3. The **To-Do** badge in the sidebar shows the **number of open tasks**
-4. To-dos are also included in search, tags, trash, iCloud sync, and export
+3. Click a card → view the full text in detail; use the **Edit** button to change the content and tags
+4. The **To-Do** badge in the sidebar shows the **number of open tasks**
+5. To-dos are also included in search, tags, trash, iCloud sync, and export
 
 ---
 

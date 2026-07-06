@@ -3,7 +3,7 @@
 macOS 链接收集应用 —— 把 URL 丢进来就完事。无需整理即可保存，日后用搜索找回。
 
 ![Platform](https://img.shields.io/badge/platform-macOS%2012%2B-lightgrey?logo=apple)
-![Version](https://img.shields.io/badge/version-1.2.0-blue)
+![Version](https://img.shields.io/badge/version-1.3.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Tests](https://img.shields.io/badge/tests-356%20passing-brightgreen)
 
@@ -170,10 +170,11 @@ sm "$(curl -Ls -o /dev/null -w '%{url_effective}' https://bit.ly/xyz)"
 
 **待办** —— 随手记录待办并勾选完成。
 
-1. 在侧边栏选择 **✅ 待办** → 在顶部输入框输入待办后按 **Enter** 添加
+1. 点击工具栏 **✅ 新建待办** → 在弹窗中输入**多行**内容并用 **⌘+Enter**（或保存）添加
 2. 点击列表中的 **复选框** → 切换完成（已完成项带删除线移至底部，不会消失）
-3. 侧边栏的 **待办** 徽标显示 **未完成数量**
-4. 待办同样纳入搜索、标签、回收站、iCloud 同步与导出
+3. 点击卡片 → 在详情中查看完整内容，用 **编辑** 按钮修改内容和标签
+4. 侧边栏的 **待办** 徽标显示 **未完成数量**
+5. 待办同样纳入搜索、标签、回收站、iCloud 同步与导出
 
 ---
 

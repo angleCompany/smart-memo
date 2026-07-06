@@ -3,7 +3,7 @@
 macOS 向けのリンク収集アプリ — URL を放り込むだけ。整理せずに保存して、あとで検索して見つけます。
 
 ![Platform](https://img.shields.io/badge/platform-macOS%2012%2B-lightgrey?logo=apple)
-![Version](https://img.shields.io/badge/version-1.2.0-blue)
+![Version](https://img.shields.io/badge/version-1.3.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Tests](https://img.shields.io/badge/tests-356%20passing-brightgreen)
 
@@ -170,10 +170,11 @@ sm "$(curl -Ls -o /dev/null -w '%{url_effective}' https://bit.ly/xyz)"
 
 **タスク** — その場でタスクを書いて完了をチェックします。
 
-1. サイドバーの **✅ タスク** を選択 → 上部の入力欄にタスクを入力し **Enter** で追加
+1. ツールバーの **✅ 新規タスク** をクリック → モーダルで**複数行**入力し **⌘+Enter**（または保存）で追加
 2. リストの **チェックボックス** をクリック → 完了を切り替え（完了項目は取り消し線付きで下部へ移動し、消えません）
-3. サイドバーの **タスク** バッジは **未完了の件数** を表示
-4. タスクも検索・タグ・ゴミ箱・iCloud 同期・エクスポートにそのまま含まれます
+3. カードをクリック → 詳細で全文を確認、**編集** ボタンで内容・タグを修正
+4. サイドバーの **タスク** バッジは **未完了の件数** を表示
+5. タスクも検索・タグ・ゴミ箱・iCloud 同期・エクスポートにそのまま含まれます
 
 ---
 

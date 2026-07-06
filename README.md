@@ -3,7 +3,7 @@
 macOS용 링크 수집 앱 — URL을 던지면 끝. 정리 없이도 나중에 찾을 수 있습니다.
 
 ![Platform](https://img.shields.io/badge/platform-macOS%2012%2B-lightgrey?logo=apple)
-![Version](https://img.shields.io/badge/version-1.2.0-blue)
+![Version](https://img.shields.io/badge/version-1.3.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Tests](https://img.shields.io/badge/tests-356%20passing-brightgreen)
 
@@ -170,10 +170,11 @@ sm "$(curl -Ls -o /dev/null -w '%{url_effective}' https://bit.ly/xyz)"
 
 **할 일** — 그때그때 할 일을 적고 완료를 체크합니다.
 
-1. 사이드바 **✅ 할 일** 선택 → 상단 입력창에 할 일 입력 후 **Enter**로 추가
+1. 툴바 **✅ 새 할 일** 클릭 → 모달에서 **여러 줄** 입력 후 **⌘+Enter**(또는 저장)로 추가
 2. 목록의 **체크박스** 클릭 → 완료 토글 (완료 항목은 취소선과 함께 하단으로 이동, 사라지지 않음)
-3. 사이드바 **할 일** 배지는 **미완료 개수**를 표시
-4. 할 일도 검색·태그·휴지통·iCloud 동기화·내보내기에 그대로 포함됩니다
+3. 카드 클릭 → 상세에서 전체 내용 확인, **편집** 버튼으로 내용·태그 수정
+4. 사이드바 **할 일** 배지는 **미완료 개수**를 표시
+5. 할 일도 검색·태그·휴지통·iCloud 동기화·내보내기에 그대로 포함됩니다
 
 ---
 
