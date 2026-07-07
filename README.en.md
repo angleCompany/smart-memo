@@ -55,9 +55,9 @@ Download the installer (`.dmg`) that matches your Mac from the latest Releases p
 3. You can now find and launch the app from Launchpad or the Applications folder.
 
 > [!IMPORTANT]
-> **⚠️ How to resolve the "Unidentified Developer" warning**
+> **⚠️ If you see "Unidentified Developer" or "the app is damaged and can't be opened"**
 >
-> This is an open-source app that is not signed with a paid Apple Developer certificate, so a warning may appear on first launch. Allow it to run with one of the methods below.
+> As an open-source app without paid Apple signing/notarization, macOS Gatekeeper shows a warning the first time you run it after downloading on another Mac. **The file is not actually damaged.** If it says "damaged and can't be opened" (common on Apple Silicon), **Option B (Terminal)** below is the reliable fix — Option A (right-click Open) may not appear in that case.
 >
 > * **Option A (Recommended): Allow from Finder**
 >   1. In Finder's **Applications** folder, locate the `Smart Memo` app.
